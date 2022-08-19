@@ -17,7 +17,7 @@ if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
 const mapStorageSlot = slot.padStart(64, '0');
 const mapKey = address.substring(2).padStart(64, '0');
 
-console.log('0x'.concat(mapKey.concat(mapStorageSlot)))
+// console.log('0x'.concat(mapKey.concat(mapStorageSlot)))
 const web3 = require('web3');
 const result = web3.utils.sha3('0x'.concat(mapKey.concat(mapStorageSlot)));
 console.log(result)

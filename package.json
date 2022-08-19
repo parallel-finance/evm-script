@@ -3,58 +3,44 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.11.10",
-    "@testing-library/react": "^11.2.6",
-    "@testing-library/user-event": "^13.1.5",
     "@types/jest": "^26.0.22",
     "@types/node": "^14.14.41",
-    "@types/react": "^17.0.3",
-    "@types/react-dom": "^17.0.3",
-    "typescript": "^4.5.5"
+    "ts-node": "^10.7.0",
+    "typescript": "^4.5.5",
+    "@axelar-network/axelar-local-dev": "git+https://github.com/axelarnetwork/axelar-local-dev.git"
   },
   "dependencies": {
     "@ethersproject/abstract-provider": "~5.5.0",
-    "@ethersproject/abstract-signer": "~5.5.0",
     "@ethersproject/address": "~5.5.0",
     "@ethersproject/bignumber": "~5.5.0",
     "@ethersproject/bytes": "~5.5.0",
+    "@ethersproject/contracts": "~5.5.0",
     "@ethersproject/logger": "~5.5.0",
+    "@ethersproject/networks": "~5.5.0",
     "@ethersproject/properties": "~5.5.0",
-    "@ethersproject/strings": "~5.5.0",
-    "@polkadot/types": "^8.3.2-2",
-    "@polkadot/api": "^8.3.2-2",
-    "@polkadot/util": "^9.1.1",
-    "@polkadot/keyring": "^9.1.1",
-    "@polkadot/util-crypto": "^9.1.1",
-    "@types/bn.js": "~5.1.0",
+    "@ethersproject/providers": "~5.5.0",
+    "@ethersproject/transactions": "~5.5.0",
+    "@ethersproject/wallet": "~5.5.0",
+    "@polkadot/api": "8.1.1",
+    "@polkadot/api-augment": "8.1.1",
+    "@polkadot/api-derive": "8.1.1",
+    "@polkadot/keyring": "^9.0.1",
+    "@polkadot/types": "8.1.1",
+    "@polkadot/util": "^9.0.1",
+    "@polkadot/util-crypto": "^9.0.1",
     "bn.js": "~5.2.0",
     "ethers": "~5.5.0",
     "keccak": "^3.0.2",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-scripts": "^5.0.0",
     "web3": "^1.7.5",
-    "web3-utils": "^1.7.5"
+    "@axelar-network/axelar-cgp-solidity": "https://github.com/axelarnetwork/axelar-cgp-solidity.git",
+    "@axelar-network/axelar-utils-solidity": "github:axelarnetwork/axelar-utils-solidity",
+    "@axelar-network/axelarjs-sdk": "^0.5.0-alpha.12",
+    "@openzeppelin/contracts": "^4.5.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "evm_2_ss58":"node evm-utilities/address_converter.js 0x302F0B71B8aD3CF6dD90aDb668E49b2168d652fd",
+    "ss58_2_evm":"node evm-utilities/address_converter.js hJGPPw4H2TarBvBrjehoRxD2HkBZwDe5JP4WA4YBpGwHHQkCD",
+    "erc20_slot":"node evm-utilities/erc20_slot.js 0 0x34cfb6da89f12770442ce8997e44f06ebb279225",
+    "check_address":"node evm-utilities/check_sum_address.js ffffffff00000000000000000000000000000001"
   }
 }

@@ -1,20 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
-pragma solidity >=0.8.0;
+pragma solidity ^0.8.9;
 
-import "./ERC20.sol";
+import "./IERC20.sol";
 
 contract ERC20Instance is IERC20 {
-    address erc20address = 0xFfFFfFFF1fCACbd218edC0EBA20Fc23000000001;
+    address erc20address = 0xFfFFFFff00000000000000000000000000000001;
     IERC20 public erc20 = IERC20(0xFfFFfFFF1fCACbd218edC0EBA20Fc23000000001);
 
     receive() external payable {
         // React to receiving ether
     }
-
-    // function name() external view override returns (string memory) {
-    //     // We nominate our target collator with all the tokens provided
-    //     return erc20.name();
-    // }
 
     function name() external view override returns (string memory) {
         (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature("name()"));
@@ -39,16 +34,19 @@ contract ERC20Instance is IERC20 {
         return abi.decode(returnData, (string));
     }
 
-    function decimals() external view override returns (uint8) {
-        // We nominate our target collator with all the tokens provided
-        // return erc20.decimals();
-        revert();
-    }
-
-    function totalSupply() external view override returns (uint256) {
-        // We nominate our target collator with all the tokens provided
-        // return erc20.totalSupply();
-        revert();
+    function mint(address to, uint256 value)
+        external
+        returns (bool)
+    {
+        // return erc20.transfer(to, value);
+        (bool success, bytes memory returnData) = erc20address.call(
+            abi.encodeWithSignature("mint(address,uint256)", to, value)
+        );
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
     }
 
     function balanceOf(address who) external view override returns (uint256) {
@@ -66,16 +64,6 @@ contract ERC20Instance is IERC20 {
         return abi.decode(returnData, (uint256));
     }
 
-    function allowance(address owner, address spender)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        // return erc20.allowance(owner, spender);
-        revert();
-    }
-
     function transfer(address to, uint256 value)
         external
         override
@@ -90,6 +78,30 @@ contract ERC20Instance is IERC20 {
                 revert(add(returnData, 0x20), returndatasize())
             }
         }
+    }
+
+    function decimals() external view override returns (uint8) {
+        // We nominate our target collator with all the tokens provided
+        // return erc20.decimals();
+        revert();
+    }
+
+    function totalSupply() external view override returns (uint256) {
+        // We nominate our target collator with all the tokens provided
+        // return erc20.totalSupply();
+        revert();
+    }
+
+    
+
+    function allowance(address owner, address spender)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        // return erc20.allowance(owner, spender);
+        revert();
     }
 
     function transfer_delegate(address to, uint256 value)
