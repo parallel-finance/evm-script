@@ -17,27 +17,28 @@ interface IERC20CrossChain{
     ) external payable;
 }
 
-abstract contract ERC20CrossChain is IERC20CrossChain,AxelarExecutable {
+contract ERC20CrossChain is AxelarExecutable,IERC20CrossChain {
     using StringToAddress for string;
     using AddressToString for address;
 
     error AlreadyInitialized();
+    error ZeroAddress();
 
     event FalseSender(string sourceChain, string sourceAddress);
 
-    IAxelarGasService public gasReceiver;
-    IAxelarGateway _gateway;
-    IERC20Plus erc20Token;
+    IAxelarGasService public immutable gasReceiver;
+    IAxelarGateway public immutable _gateway;
+    IERC20Plus public immutable erc20Token;
+    address public immutable gatewayAddress;
 
-    constructor() {}
-
-    function init(address gateway_, address gasReceiver_,address erc20Token_) external {
-        if (address(_gateway) != address(0) || address(gasReceiver) != address(0)) revert AlreadyInitialized();
+    constructor(address gatewayAddress_,address gasReceiver_,address erc20Token_) AxelarExecutable(gatewayAddress_) {
+        if (gatewayAddress_ == address(0)) revert ZeroAddress();
+        gatewayAddress = gatewayAddress_;
+        _gateway = IAxelarGateway(gatewayAddress);
         gasReceiver = IAxelarGasService(gasReceiver_);
-        _gateway = IAxelarGateway(gateway_);
         erc20Token = IERC20Plus(erc20Token_);
+        //todo: invoke erc20.set_team to set owner of erc20 to this
     }
-
 
     // This is for testing.
     function giveMe(uint256 amount) external {
