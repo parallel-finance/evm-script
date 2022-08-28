@@ -3,11 +3,12 @@
 pragma solidity ^0.8.9;
 
 import { AxelarExecutable } from '@axelar-network/axelar-utils-solidity/contracts/executables/AxelarExecutable.sol';
-import { IAxelarGateway } from '@axelar-network/axelar-utils-solidity/contracts/interfaces/IAxelarGateway.sol';
+import { IAxelarGateway } from '@axelar-network/axelar-cgp-solidity/contracts/interfaces/IAxelarGateway.sol';
 import { IAxelarGasService } from '@axelar-network/axelar-cgp-solidity/contracts/interfaces/IAxelarGasService.sol';
 import { StringToAddress, AddressToString } from '@axelar-network/axelar-utils-solidity/contracts/StringAddressUtils.sol';
 
 import "./IERC20.sol";
+import "./TestToken.sol";
 
 interface IERC20CrossChain{
     function transferRemote(
@@ -27,22 +28,40 @@ contract ERC20CrossChain is AxelarExecutable,IERC20CrossChain {
     event FalseSender(string sourceChain, string sourceAddress);
 
     IAxelarGasService public immutable gasReceiver;
-    IAxelarGateway public immutable _gateway;
-    IERC20Plus public immutable erc20Token;
+
     address public immutable gatewayAddress;
+    IAxelarGateway public immutable _gateway;
+
+    IERC20Plus public erc20Token;
+
+    TestToken public testToken;
 
     constructor(address gatewayAddress_,address gasReceiver_,address erc20Token_) AxelarExecutable(gatewayAddress_) {
-        if (gatewayAddress_ == address(0)) revert ZeroAddress();
+        if (gatewayAddress_ == address(0) || gasReceiver_ == address(0)) revert ZeroAddress();
         gatewayAddress = gatewayAddress_;
         _gateway = IAxelarGateway(gatewayAddress);
         gasReceiver = IAxelarGasService(gasReceiver_);
-        erc20Token = IERC20Plus(erc20Token_);
-        //todo: invoke erc20.set_team to set owner of erc20 to this
+        if (erc20Token_ != address(0)) {
+            erc20Token = IERC20Plus(erc20Token_);
+        }
+    }
+
+    // Begin:This is for testing
+    function init(string memory name_,
+        string memory symbol_,
+        uint8 decimals_
+        ) external {
+        testToken = new TestToken(name_, symbol_, decimals_);
+    }
+
+    // This is for testing.
+    function balanceOf(address who) public view returns (uint256) {
+        return testToken.balanceOf(who);
     }
 
     // This is for testing.
     function giveMe(uint256 amount) external {
-        erc20Token.mint(msg.sender, amount);
+        testToken.mint(msg.sender, amount);
     }
 
     function transferRemote(
@@ -50,7 +69,12 @@ contract ERC20CrossChain is AxelarExecutable,IERC20CrossChain {
         address destinationAddress,
         uint256 amount
     ) public payable override {
-        erc20Token.burn(msg.sender, amount);
+        if(address(erc20Token) != address(0)){
+            erc20Token.burn(msg.sender, amount);
+        }else{
+            testToken.burn(msg.sender, amount);
+        }
+        
         bytes memory payload = abi.encode(destinationAddress, amount);
         string memory stringAddress = address(this).toString();
         if (msg.value > 0) {
@@ -75,6 +99,10 @@ contract ERC20CrossChain is AxelarExecutable,IERC20CrossChain {
             return;
         }
         (address to, uint256 amount) = abi.decode(payload, (address, uint256));
-        erc20Token.mint(to, amount);
+        if(address(erc20Token) != address(0)){
+            erc20Token.mint(to, amount);
+        }else{
+            testToken.mint(to, amount);
+        }
     }
 }

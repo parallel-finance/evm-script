@@ -4,8 +4,13 @@ pragma solidity ^0.8.9;
 import "./IERC20.sol";
 
 contract ERC20Instance is IERC20 {
-    address erc20address = 0xFfFFFFff00000000000000000000000000000001;
-    IERC20 public erc20 = IERC20(erc20address);
+    address public immutable erc20address;
+    IERC20 public immutable erc20;
+
+    constructor(address erc20address_) {
+        erc20address = erc20address_;
+        erc20 = IERC20(erc20address);
+    }
 
     receive() external payable {
         // React to receiving ether
