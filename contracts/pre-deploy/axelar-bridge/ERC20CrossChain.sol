@@ -7,7 +7,7 @@ import { IAxelarGateway } from '@axelar-network/axelar-cgp-solidity/contracts/in
 import { IAxelarGasService } from '@axelar-network/axelar-cgp-solidity/contracts/interfaces/IAxelarGasService.sol';
 import { StringToAddress, AddressToString } from '@axelar-network/axelar-utils-solidity/contracts/StringAddressUtils.sol';
 
-import "./IERC20.sol";
+import "../interfaces/IERC20.sol";
 import "./TestToken.sol";
 
 interface IERC20CrossChain{

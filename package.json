@@ -36,6 +36,8 @@
     "ethers": "~5.5.0",
     "keccak": "^3.0.2",
     "web3": "^1.7.5",
+    "fs-extra": "^10.1.0",
+    "ganache": "^7.3.2",
     "@axelar-network/axelar-utils-solidity": "github:axelarnetwork/axelar-utils-solidity",
     "@openzeppelin/contracts": "^4.5.0"
   },
@@ -56,5 +58,8 @@
     "solhint": "^3.3.7",
     "solidity-coverage": "^0.7.21",
     "mocha": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=16"
   }
 }

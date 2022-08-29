@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.9;
 
-import "./IERC20.sol";
+import "./interfaces/IERC20.sol";
 
 contract ERC20Instance is IERC20 {
     address public immutable erc20address;
