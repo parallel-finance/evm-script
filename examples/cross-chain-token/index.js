@@ -4,27 +4,31 @@ const {
     getDefaultProvider,
     Contract,
     constants: { AddressZero },
+    utils: { defaultAbiCoder },
 } = require('ethers');
-const { deployAndInitContractConstant } = require('@axelar-network/axelar-utils-solidity');
+const { deployUpgradable } = require('@axelar-network/axelar-gmp-sdk-solidity');
 
-const ERC20CrossChain = require('../../artifacts/contracts/axelar-bridge/bridge.sol/ERC20CrossChain.json');
+const ERC20CrossChainProxy = require('../../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChainProxy.sol/ERC20CrossChainProxy.json');
+const ERC20CrossChain = require('../../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChainTest.sol/ERC20CrossChain.json');
 
-const name = 'USDC';
-const symbol = 'USDC';
-const decimals = 6;
+const name = 'DAI';
+const symbol = 'DAI';
+const decimals = 18;
 
 async function deploy(chain, wallet) {
     console.log(`Deploying ERC20CrossChain for ${chain.name}.`);
-    const contract = await deployAndInitContractConstant(
+    const contract = await deployUpgradable(
         chain.constAddressDeployer,
         wallet,
         ERC20CrossChain,
-        'erc20-cross-chain',
-        [chain.gateway, chain.gasReceiver,'0x0000000000000000000000000000000000000000'],
-        [name, symbol, decimals],
+        ERC20CrossChainProxy,
+        [chain.gateway, chain.gasReceiver,decimals],
+        [],
+        defaultAbiCoder.encode(['string', 'string'], [name, symbol]),
+        'ERC20CrossChain',
     );
     chain.crossChainToken = contract.address;
-    console.log(`Deployed USDC for ${chain.name} at ${chain.crossChainToken}.`);
+    console.log(`Deployed ERC20CrossChain for ${chain.name} at ${chain.crossChainToken}.`);
 }
 
 async function test(chains, wallet, options) {
@@ -33,7 +37,16 @@ async function test(chains, wallet, options) {
     for (const chain of chains) {
         const provider = getDefaultProvider(chain.rpc);
         chain.wallet = wallet.connect(provider);
-        chain.contract = new Contract(chain.crossChainToken, ERC20CrossChain.abi, chain.wallet);
+        chain.contract = await deployUpgradable(
+            chain.constAddressDeployer,
+            chain.wallet,
+            ERC20CrossChain,
+            ERC20CrossChainProxy,
+            [chain.gateway, chain.gasReceiver,decimals],
+            [],
+            defaultAbiCoder.encode(['string', 'string'], [name, symbol]),
+            'ERC20CrossChain',
+        );
     }
     const source = chains.find((chain) => chain.name == (args[0] || 'Avalanche'));
     const destination = chains.find((chain) => chain.name == (args[1] || 'Fantom'));
@@ -50,7 +63,7 @@ async function test(chains, wallet, options) {
             }, ms);
         });
     }
-    const intialBalance = await destination.contract.balanceOf(wallet.address);
+    const initialBalance = (await destination.contract.balanceOf(wallet.address)).toNumber();
     console.log('--- Initially ---');
     await print();
 
@@ -64,7 +77,8 @@ async function test(chains, wallet, options) {
     await (
         await source.contract.transferRemote(destination.name, wallet.address, amount, { value: BigInt(Math.floor(gasLimit * gasPrice)) })
     ).wait();
-    while (Number(await destination.contract.balanceOf(wallet.address)) == Number(intialBalance)) {
+    
+    while ((await destination.contract.balanceOf(wallet.address)).toNumber() === initialBalance) {
         await sleep(2000);
     }
 

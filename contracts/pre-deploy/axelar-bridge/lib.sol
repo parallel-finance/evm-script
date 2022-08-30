@@ -2,7 +2,10 @@
 
 pragma solidity ^0.8.9;
 
-import { IUpgradable } from '@axelar-network/axelar-utils-solidity/contracts/interfaces/IUpgradable.sol';
+import { IUpgradable } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IUpgradable.sol';
+import { ConstAddressDeployer } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/ConstAddressDeployer.sol';
+
+import { ERC20Permit } from '@axelar-network/axelar-cgp-solidity/contracts/ERC20Permit.sol';
 import { IAxelarExecutable } from '@axelar-network/axelar-cgp-solidity/contracts/interfaces/IAxelarExecutable.sol';
 import { TokenDeployer } from '@axelar-network/axelar-cgp-solidity/contracts/TokenDeployer.sol';
 import { AxelarGatewayProxy } from '@axelar-network/axelar-cgp-solidity/contracts/AxelarGatewayProxy.sol';
@@ -11,4 +14,3 @@ import { BurnableMintableCappedERC20 } from '@axelar-network/axelar-cgp-solidity
 import { AxelarAuthWeighted } from '@axelar-network/axelar-cgp-solidity/contracts/auth/AxelarAuthWeighted.sol';
 import { AxelarGasService } from '@axelar-network/axelar-cgp-solidity/contracts/gas-service/AxelarGasService.sol';
 import { AxelarGasServiceProxy } from '@axelar-network/axelar-cgp-solidity/contracts/gas-service/AxelarGasServiceProxy.sol';
-import { ConstAddressDeployer } from '@axelar-network/axelar-utils-solidity/contracts/ConstAddressDeployer.sol';

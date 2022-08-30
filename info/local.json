@@ -11,7 +11,7 @@
     "rpc": "http://localhost:8500/0",
     "tokenName": "DEV",
     "tokenSymbol": "DEV",
-    "crossChainToken": "0x3bE3B9300AEe993cAE601a5a5639929C4BdF7628"
+    "crossChainToken": "0x4fD879b5ea331d1EDBB962A1aF21B6F665396bD5"
   },
   {
     "name": "Avalanche",
@@ -25,7 +25,7 @@
     "rpc": "http://localhost:8500/1",
     "tokenName": "Avax",
     "tokenSymbol": "AVAX",
-    "crossChainToken": "0xb53791791DB300B1B43B8d6785e67FD4Af12FC37"
+    "crossChainToken": "0x4fD879b5ea331d1EDBB962A1aF21B6F665396bD5"
   },
   {
     "name": "Fantom",
@@ -39,7 +39,7 @@
     "rpc": "http://localhost:8500/2",
     "tokenName": "Fantom",
     "tokenSymbol": "FTM",
-    "crossChainToken": "0x70fF697Bf22bA22f4Ac78865B17610f9D87119A8"
+    "crossChainToken": "0x4fD879b5ea331d1EDBB962A1aF21B6F665396bD5"
   },
   {
     "name": "Ethereum",
@@ -53,7 +53,7 @@
     "rpc": "http://localhost:8500/3",
     "tokenName": "Ether",
     "tokenSymbol": "ETH",
-    "crossChainToken": "0x1DeEF638947C6BA45220776FE6e4A12dB015DAA8"
+    "crossChainToken": "0x4fD879b5ea331d1EDBB962A1aF21B6F665396bD5"
   },
   {
     "name": "Polygon",
@@ -67,6 +67,6 @@
     "rpc": "http://localhost:8500/4",
     "tokenName": "Matic",
     "tokenSymbol": "MATIC",
-    "crossChainToken": "0xB4CdD04f622DE49d2aFAA852f04360D806822d6D"
+    "crossChainToken": "0x4fD879b5ea331d1EDBB962A1aF21B6F665396bD5"
   }
 ]

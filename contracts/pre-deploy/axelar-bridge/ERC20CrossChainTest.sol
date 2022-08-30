@@ -7,10 +7,10 @@ import { IAxelarGasService } from '@axelar-network/axelar-gmp-sdk-solidity/contr
 import { AxelarExecutable } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/executables/AxelarExecutable.sol';
 import { Upgradable } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/upgradables/Upgradable.sol';
 import { StringToAddress, AddressToString } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/StringAddressUtils.sol';
+import { IERC20 } from '@axelar-network/axelar-cgp-solidity/contracts/interfaces/IERC20.sol';
+import { ERC20 } from '@axelar-network/axelar-cgp-solidity/contracts/ERC20.sol';
 
-import "../interfaces/IERC20.sol";
-
-interface IERC20CrossChain{
+interface IERC20CrossChain is IERC20 {
     function transferRemote(
         string calldata destinationChain,
         address destinationAddress,
@@ -18,7 +18,7 @@ interface IERC20CrossChain{
     ) external payable;
 }
 
-contract ERC20CrossChain is AxelarExecutable,IERC20CrossChain,Upgradable {
+contract ERC20CrossChain is AxelarExecutable,ERC20,IERC20CrossChain,Upgradable {
     using StringToAddress for string;
     using AddressToString for address;
 
@@ -29,16 +29,21 @@ contract ERC20CrossChain is AxelarExecutable,IERC20CrossChain,Upgradable {
 
     IAxelarGasService public immutable gasReceiver;
 
-    IERC20Plus public erc20Token;
-
-    constructor(address gatewayAddress_,address gasReceiver_) AxelarExecutable(gatewayAddress_) { 
+    constructor(address gatewayAddress_,address gasReceiver_,uint8 decimals_
+    ) AxelarExecutable(gatewayAddress_) ERC20('', '', decimals_) {
         gasReceiver = IAxelarGasService(gasReceiver_);
     }
 
     function _setup(bytes calldata params) internal override {
-        address erc20Token_ = abi.decode(params, (address));
-        if(address(erc20Token) != address(0)) revert AlreadyInitialized();
-        erc20Token = IERC20Plus(erc20Token_);
+        (string memory name_, string memory symbol_) = abi.decode(params, (string, string));
+        if (bytes(name).length != 0) revert AlreadyInitialized();
+        name = name_;
+        symbol = symbol_;
+    }
+
+    // This is for testing.
+    function giveMe(uint256 amount) external {
+        _mint(msg.sender, amount);
     }
 
     function transferRemote(
@@ -46,7 +51,7 @@ contract ERC20CrossChain is AxelarExecutable,IERC20CrossChain,Upgradable {
         address destinationAddress,
         uint256 amount
     ) public payable override {
-        erc20Token.burn(msg.sender, amount);
+        _burn(msg.sender, amount);
         bytes memory payload = abi.encode(destinationAddress, amount);
         string memory stringAddress = address(this).toString();
         if (msg.value > 0) {
@@ -71,7 +76,7 @@ contract ERC20CrossChain is AxelarExecutable,IERC20CrossChain,Upgradable {
             return;
         }
         (address to, uint256 amount) = abi.decode(payload, (address, uint256));
-        erc20Token.mint(to, amount);
+        _mint(to, amount);
     }
 
     function contractId() external pure returns (bytes32) {
