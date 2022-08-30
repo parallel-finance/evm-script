@@ -17,7 +17,7 @@ const examples = [
     'cross-chain-token'
 ];
 
-describe('examples', function () {
+describe('bridge', function () {
     this.timeout(30000); 
     setLogger((...args) => {});
     const deployer_key = keccak256(

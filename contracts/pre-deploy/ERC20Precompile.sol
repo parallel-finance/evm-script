@@ -109,6 +109,21 @@ contract ERC20Instance is IERC20 {
         return true;
     }
 
+    function burn(address from, uint256 value)
+        external
+        returns (bool)
+    {
+        (bool success, bytes memory returnData) = erc20address.call(
+            abi.encodeWithSignature("burn(address,uint256)", from, value)
+        );
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
+        return true;
+    }
+
     function transfer(address to, uint256 value)
         external
         override

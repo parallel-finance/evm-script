@@ -6,12 +6,14 @@
     "build": "rm -rf artifacts && npx hardhat compile",
     "lint": "solhint 'src/contracts/**/*.sol' && eslint 'test/**/*.js'",
     "prettier": "prettier --write 'examples/**/*.sol' 'test/**/*.js' 'examples/**/*.js'",
-    "evm_2_ss58":"node scripts/address_converter.js 0x302F0B71B8aD3CF6dD90aDb668E49b2168d652fd",
-    "ss58_2_evm":"node scripts/address_converter.js hJGPPw4H2TarBvBrjehoRxD2HkBZwDe5JP4WA4YBpGwHHQkCD",
-    "erc20_slot":"node scripts/erc20_slot.js 0 0x34cfb6da89f12770442ce8997e44f06ebb279225",
-    "check_address":"node scripts/check_sum_address.js ffffffff00000000000000000000000000000001",
-    "start_chain": "node scripts/createLocal.js",
-    "test": "npx hardhat test"
+    "evm_2_ss58": "node script/address_converter.js 0x302F0B71B8aD3CF6dD90aDb668E49b2168d652fd",
+    "ss58_2_evm": "node script/address_converter.js hJGPPw4H2TarBvBrjehoRxD2HkBZwDe5JP4WA4YBpGwHHQkCD",
+    "erc20_slot": "node script/erc20_slot.js 0 0x34cfb6da89f12770442ce8997e44f06ebb279225",
+    "check_address": "node script/check_sum_address.js ffffffff00000000000000000000000000000001",
+    "start_chain": "node script/createLocal.js",
+    "test-bridge": "npx hardhat test --grep bridge",
+    "test-deploy-token": "node script/token.js deploy",
+    "test-mint-token": "node script/token.js mint 0x55B243b8A5239D794DA4Af25cD263ad75cb90971"
   },
   "dependencies": {
     "@polkadot/api": "8.1.1",
