@@ -1,6 +1,29 @@
-const { ContractFactory } = require('ethers');
+const { ContractFactory, ethers } = require('ethers');
+const { defaultAbiCoder, id, arrayify, keccak256 } = ethers.utils;
 const http = require('http');
 const { outputJsonSync } = require('fs-extra');
+
+const logger = { log: console.log };
+
+const getRandomInt = (max) => {
+  return Math.floor(Math.random() * max);
+};
+
+const bigNumberToNumber = (bigNumber)=> {
+  return bigNumber.toNumber();
+}
+
+const getSignedExecuteInput = async(data,wallet)=> {
+  const signature = await wallet.signMessage(arrayify(keccak256(data)));
+  const signData = defaultAbiCoder.encode(['address[]', 'uint256[]', 'uint256', 'bytes[]'], [[wallet.address], [1], 1, [signature]]);
+  return defaultAbiCoder.encode(['bytes', 'bytes'], [data, signData]);
+}
+
+const getRandomID = () => id(getRandomInt(1e10).toString());
+
+const getLogID = (chain, log) => {
+  return id(chain + ':' + log.blockNumber + ':' + log.transactionIndex + ':' + log.logIndex);
+};
 
 const deployContract = async (
   wallet,
@@ -65,8 +88,5 @@ const httpGet = (url) => {
   });
 };
 
-module.exports = {
-  deployContract,
-  setJSON,
-  httpGet,
-};
+module.exports = {httpGet,logger,bigNumberToNumber,setJSON,deployContract,
+  getLogID,getRandomID,getSignedExecuteInput}

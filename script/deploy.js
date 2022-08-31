@@ -1,0 +1,201 @@
+const ethers = require('ethers');
+const {Wallet, Contract, providers, utils} = ethers;
+const { defaultAbiCoder, arrayify, keccak256, toUtf8Bytes } = utils;
+const fs = require('fs-extra');
+const { deployContract, setJSON,logger,getSignedExecuteInput, getRandomID } = require('./utils');
+const { deployContractConstant, predictContractConstant } = require('./constAddressDeployer');
+const polkadotCryptoUtils = require('@polkadot/util-crypto');
+
+const ConstAddressDeployer = require('../artifacts/contracts/pre-deploy/ConstAddressDeployer.sol/ConstAddressDeployer.json');
+const ERC20PrecompileInstance = require('../artifacts/contracts/pre-deploy/ERC20Precompile.sol/ERC20Instance.json');
+const ERC20CrossChainExecutor = require('../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChain.sol/ERC20CrossChain.json');
+
+const TokenDeployer = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/TokenDeployer.sol/TokenDeployer.json');
+const Auth = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/auth/AxelarAuthWeighted.sol/AxelarAuthWeighted.json');
+const AxelarGasReceiver = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/gas-service/AxelarGasService.sol/AxelarGasService.json');
+const AxelarGasReceiverProxy = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/gas-service/AxelarGasServiceProxy.sol/AxelarGasServiceProxy.json');
+const AxelarGatewayProxy = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/AxelarGatewayProxy.sol/AxelarGatewayProxy.json');
+const AxelarGateway = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/AxelarGateway.sol/AxelarGateway.json');
+const IAxelarGateway = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/interfaces/IAxelarGateway.sol/IAxelarGateway.json');
+
+
+const providerRPC = {
+  chain: {
+    name: 'parallel-evm-chain',
+    rpc: (process.env.RPC_URL) || 'http://127.0.0.1:29933',
+    chainId: (process.env.CHAIN_ID) || 592,
+    addressPrefix: (process.env.SS58_PREFIX) || 110,
+    deployKey: 'parallel-evm-deployer'
+  },
+};
+
+// we fund alice in substrate chain spec as admin
+const accountOfAdmin = {
+  address: (process.env.ADMIN_ADDRESS) || '0x8097c3C354652CB1EEed3E5B65fBa2576470678A',
+  // alice's key is no secret
+  privateKey: (process.env.ADMIN_PRIVATE_KEY) || '0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a',
+};
+
+// mapping to asset with id=1(assuming dai) which is created in asset pallet
+const asset_address = ethers.utils.getAddress(
+  (process.env.ASSET_PRECOMPILE_ADDRESS) || '0xFfFFFFff00000000000000000000000000000001');
+
+const provider = new ethers.providers.StaticJsonRpcProvider(
+  providerRPC.chain.rpc,
+  {
+    chainId: providerRPC.chain.chainId,
+    name: providerRPC.chain.name,
+  },
+);
+
+const wallet = new ethers.Wallet(accountOfAdmin.privateKey, provider);
+
+const deployed_info_file = './info/contracts.json';
+
+let contract_info = {
+  gateway: '0x',
+  gasReceiver: '0x',
+  constAddressDeployer: '0x',
+  crossChainTokenExecutor: '0x',
+  erc20TokenAddress: '0x',
+  erc20SS58Address: '',
+};
+
+const balances = async (account) => {
+  return ethers.utils.formatEther(await provider.getBalance(account));
+};
+
+const checkAdminBalance = async () => {
+  const balanceOfAdmin = await balances(accountOfAdmin.address);
+  console.log(`The balance of ${accountOfAdmin.address} is: ${balanceOfAdmin} HKO`);
+};
+
+// deploy constAddress deployer first
+const init = async () => {
+  await checkAdminBalance();
+  const deployer = (await deployContract(wallet, ConstAddressDeployer)).address;
+  console.log(`constAddressDeployer deployed to ${deployer}`);
+  contract_info.constAddressDeployer = deployer;
+  setJSON(contract_info, deployed_info_file);
+};
+
+const deploy = async () => {
+  contract_info = await fs.readJson(deployed_info_file);
+  await deploy_token();
+  await deploy_bridge();
+  setJSON(contract_info, deployed_info_file);
+};
+
+// use ConstAddressDeployer
+const deploy_token = async () => {
+  logger.log(`Deploying ERC20 Token... `);
+  const deployer = contract_info.constAddressDeployer;
+  const deployKey = providerRPC.chain.deployKey;
+  const token_address = await predictContractConstant(
+    deployer,
+    wallet,
+    ERC20PrecompileInstance,
+    deployKey,
+    [asset_address],
+  );
+  console.log(`predict ERC20Token deployed to ${token_address}`);
+  const token_contract = await deployContractConstant(
+    deployer,
+    wallet,
+    ERC20PrecompileInstance,
+    deployKey,
+    [asset_address],
+  );
+  console.log(`ERC20Token deployed to ${await token_contract.address}`);
+  contract_info.erc20TokenAddress = (await token_contract.address);
+  contract_info.erc20SS58Address = polkadotCryptoUtils.evmToAddress(contract_info.erc20TokenAddress, providerRPC.chain.addressPrefix);
+  console.log('erc20SS58Address is:' + contract_info.erc20SS58Address);
+};
+
+const deploy_bridge = async () => {
+  await _deployGateway()
+  await _deployGasReceiver()
+  await _deployCrossChainExecutor()
+};
+
+const _deployGateway = async () => {
+  logger.log(`Deploying the Axelar Gateway... `);
+
+  const params = arrayify(
+      defaultAbiCoder.encode(
+          ['address[]', 'uint8', 'bytes'],
+          [[wallet.address], 3, '0x']
+      )
+  );
+  const auth = await deployContract(wallet, Auth, [
+      [defaultAbiCoder.encode(['address[]', 'uint256[]', 'uint256'], [[wallet.address], [1], 1])],
+  ]);
+  const tokenDeployer = await deployContract(wallet, TokenDeployer);
+  const _gateway = await deployContract(wallet, AxelarGateway, [auth.address, tokenDeployer.address]);
+  // todo: need to enable delegate call
+  // const proxy = await deployContract(wallet, AxelarGatewayProxy, [_gateway.address, params]);
+  // await (await auth.transferOwnership(proxy.address)).wait();
+  // gateway = new Contract(proxy.address, IAxelarGateway.abi, provider);
+  logger.log(`Gateway Deployed at ${_gateway.address}`);
+  contract_info.gateway = _gateway.address;
+}
+
+const _deployGasReceiver = async() => {
+  logger.log(`Deploying the Axelar Gas Receiver ... `);
+  const gasReceiver = await deployContract(wallet, AxelarGasReceiver, []);
+  // const gasReceiverProxy = await deployContract(wallet, AxelarGasReceiverProxy);
+  // await gasReceiverProxy.init(gasReceiver.address, wallet.address, '0x');
+  // gasReceiver = new Contract(gasReceiverProxy.address, AxelarGasReceiver.abi, provider);
+  logger.log(`GasReceiver Deployed at ${gasReceiver.address}`);
+  contract_info.gasReceiver = gasReceiver.address;
+}
+
+const _deployCrossChainExecutor = async() => {
+  console.log(`Deploying ERC20CrossChainExecutor ...`);
+  const deployer = contract_info.constAddressDeployer;
+  const deployKey = providerRPC.chain.deployKey;
+  const crosschainExecutor = await deployContractConstant(
+    deployer,
+    wallet,
+    ERC20CrossChainExecutor,
+    deployKey,
+    [contract_info.gateway, contract_info.gasReceiver, contract_info.erc20TokenAddress]
+  );
+  contract_info.crossChainTokenExecutor = crosschainExecutor.address;
+  console.log(`Deployed ERC20CrossChainExecutor at ${crosschainExecutor.address}`);
+}
+
+const test = async () => {
+  await mint();
+};
+
+// before test we need manually set owner of asset to token contract
+const mint = async () => {
+  contract_info = await fs.readJson(deployed_info_file);
+  const token_address = contract_info.erc20TokenAddress;
+  const erc20_token = new ethers.Contract(token_address, ERC20PrecompileInstance.abi, wallet);
+  // check name is same as in asset pallet
+  console.log(`ERC20Token name is ${await erc20_token.name()}`);
+  console.log(`ERC20Token init balance is ${await erc20_token.balanceOf(accountOfAdmin.address)}`);
+  await (await erc20_token.mint(accountOfAdmin.address, ethers.utils.parseEther('1.0'))).wait();
+  console.log(`ERC20Token balance after mint is ${await erc20_token.balanceOf(accountOfAdmin.address)}`);
+  await (await erc20_token.burn(accountOfAdmin.address, ethers.utils.parseEther('0.5'))).wait();
+  console.log(`ERC20Token balance after burn is ${await erc20_token.balanceOf(accountOfAdmin.address)}`);
+};
+
+(async () => {
+  try {
+    const mode = process.argv.slice(2)[0];
+    if (mode == 'init') {
+      await init();
+    } else if (mode == 'deploy') {
+      await deploy();
+    } else if (mode == 'test') {
+      await test();
+    } else {
+      throw new Error('not support');
+    }
+  } catch (e) {
+    console.error(e);
+  }
+})();

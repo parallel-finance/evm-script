@@ -14,12 +14,10 @@
     "erc20_slot": "node script/erc20_slot.js 0 0x34cfb6da89f12770442ce8997e44f06ebb279225",
     "check_address": "node script/check_sum_address.js ffffffff00000000000000000000000000000001",
     "test-bridge": "npx hardhat test --grep bridge",
-    "start-chain": "cd ../.. && make local-dev-launch",
-    "init-chain": "node script/token.js init",
-    "provisioning-chain": "npm run deploy-token",
-    "deploy-token": "node script/token.js deploy",
-    "test-chain": "npm run test-mint-token",
-    "test-mint-token": "node script/token.js test"
+    "start-chain": "cd ../.. && make launch-evm",
+    "init-chain": "node script/deploy.js init",
+    "provisioning-chain": "node script/deploy.js deploy",
+    "test-chain": "node script/deploy.js test"
   },
   "dependencies": {
     "@polkadot/api": "8.1.1",
