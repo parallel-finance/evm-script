@@ -1,41 +1,44 @@
-# evm-substrate-address-converter
- a simple UI tool for converting substrate address to evm address and back
+ Script and provisioning Contracts for evm runtime chain
 
+# evm-substrate-address-converter
+ a script for converting substrate address to evm address and back
+
+```package.json
+    "evm_2_ss58": "node script/address_converter.js 0x302F0B71B8aD3CF6dD90aDb668E49b2168d652fd",
+    "ss58_2_evm": "node script/address_converter.js hJGPPw4H2TarBvBrjehoRxD2HkBZwDe5JP4WA4YBpGwHHQkCD",
+```
 # Substrate EVM Utilities
 
-This directory is home to a Node.js project with some helpful utilities for working with Substrate
-and the EVM pallet.
+some helpful utilities for working with Substrate and the EVM pallet.
 
-## Installation and Usage
+- script for calculate slot based on contract address and slot number in the contract so we can query storage value from EVM pallet later
 
-Use `npm i` to install dependencies. To use these utilities, execute
-`node ./utils <command> <parameters>` in the project root (i.e. the parent of this folder).
-
-## Commands
-
-This utility supports the following commands:
-
-### `--erc20-slot <slot> <address>`
-
-Calculate the storage slot for an (EVM) address's ERC-20 balance, where `<slot>` is the storage slot
-for the ERC-20 balances map
-
-```bash
-node ./utils --erc20-slot 0 0xd43593c715fdd31c61141abd04a99fd6822c8558
-
-0x000000000000000000000000d43593c715fdd31c61141abd04a99fd6822c85580000000000000000000000000000000000000000000000000000000000000000
-0x045c0350b9cf0df39c4b40400c965118df2dca5ce0fbcf0de4aafc099aea4a14
+```package.json
+    "erc20_slot": "node script/erc20_slot.js 0 0x34cfb6da89f12770442ce8997e44f06ebb279225",  
 ```
 
-### `--evm-address <address>`
+# EVM Chain Provisioning
 
-Calculate the **hashed** EVM address that corresponds to a native Substrate address.
+- start live chain and provisioning
 
-```bash
-$ node ./utils --evm-address 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
-$ 0x57d213d0927ccc7596044c6ba013dd05522aacba
+```
+    "start-chain": "cd ../.. && make local-dev-launch",
+    "init-chain": "node script/token.js init",
+    "deploy-token": "node script/token.js deploy",
+    "provisioning-chain": "npm run deploy-token",
 ```
 
-> NOTE: the template presently uses the **truncated** H160 address format. Thus this utility is not
-> needed. Instead, you should use the leading 20 bytes of the hex encoded address produced by the
-> [`subkey` tool](https://docs.substrate.io/v3/tools/subkey):
+# Alexar Bridge Integration Test
+
+- mock test for example `cross-chain-token` implementation
+
+```
+    "test-bridge": "npx hardhat test --grep bridge" 
+```
+
+- live chain test
+  
+```
+    "test-mint-token": "node script/token.js test",
+    "test-chain": "npm run test-mint-token", 
+```
