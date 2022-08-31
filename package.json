@@ -16,7 +16,9 @@
     "test-bridge": "npx hardhat test --grep bridge",
     "start-chain": "cd ../.. && make local-dev-launch",
     "init-chain": "node script/token.js init",
+    "provisioning-chain": "npm run deploy-token",
     "deploy-token": "node script/token.js deploy",
+    "test-chain": "npm run test-mint-token",
     "test-mint-token": "node script/token.js test"
   },
   "dependencies": {
