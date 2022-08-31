@@ -1,7 +1,7 @@
-const help = `--address <address>: Calculate the EVM address that corresponds to a native Substrate address or vice versa.`;
+const help = '--address <address>: Calculate the EVM address that corresponds to a native Substrate address or vice versa.';
 
 const polkadotCryptoUtils = require('@polkadot/util-crypto');
-const polkadotUtils = require("@polkadot/util");
+const polkadotUtils = require('@polkadot/util');
 const addressPrefix = 110;
 
 if (process.argv.length < 3) {
@@ -17,9 +17,8 @@ if (!address.match(/^[A-z0-9]*/)) {
   process.exit(9);
 }
 
-  
-if(polkadotCryptoUtils.isEthereumAddress(address)) {
+if (polkadotCryptoUtils.isEthereumAddress(address)) {
   console.log(polkadotCryptoUtils.evmToAddress(address, addressPrefix));
-}else{
+} else {
   console.log(polkadotUtils.u8aToHex(polkadotCryptoUtils.addressToEvm(address, true)));
 }

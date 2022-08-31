@@ -1,4 +1,3 @@
-'use strict';
 
 const {
   Contract,
@@ -9,7 +8,7 @@ const { deployAndInitContractConstant } = require('./constAddressDeployer');
 
 const IUpgradable = require('../artifacts/contracts/pre-deploy/interfaces/IUpgradable.sol/IUpgradable.json');
 
-async function deployUpgradable(
+async function deployUpgradable (
   constAddressDeployerAddress,
   wallet,
   implementationJson,
@@ -43,7 +42,7 @@ async function deployUpgradable(
   return new Contract(proxy.address, implementationJson.abi, wallet);
 }
 
-async function upgradeUpgradable(
+async function upgradeUpgradable (
   proxyAddress,
   wallet,
   contractJson,

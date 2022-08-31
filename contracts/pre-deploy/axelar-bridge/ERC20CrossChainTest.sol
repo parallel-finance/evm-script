@@ -18,7 +18,7 @@ interface IERC20CrossChain is IERC20 {
     ) external payable;
 }
 
-contract ERC20CrossChain is AxelarExecutable,ERC20,IERC20CrossChain,Upgradable {
+contract ERC20CrossChain is AxelarExecutable, ERC20, IERC20CrossChain, Upgradable {
     using StringToAddress for string;
     using AddressToString for address;
 
@@ -29,7 +29,10 @@ contract ERC20CrossChain is AxelarExecutable,ERC20,IERC20CrossChain,Upgradable {
 
     IAxelarGasService public immutable gasReceiver;
 
-    constructor(address gatewayAddress_,address gasReceiver_,uint8 decimals_
+    constructor(
+        address gatewayAddress_,
+        address gasReceiver_,
+        uint8 decimals_
     ) AxelarExecutable(gatewayAddress_) ERC20('', '', decimals_) {
         gasReceiver = IAxelarGasService(gasReceiver_);
     }

@@ -1,4 +1,3 @@
-'use strict';
 
 const {
   Contract,
@@ -153,7 +152,6 @@ const predictContractConstant = async (
     wallet,
   );
   const salt = getSaltFromKey(key);
-
   const factory = new ContractFactory(contractJson.abi, contractJson.bytecode);
   const bytecode = factory.getDeployTransaction(...args).data;
   return await deployer.deployedAddress(bytecode, wallet.address, salt);

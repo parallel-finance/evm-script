@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.9;
 
-import "./interfaces/IERC20.sol";
+import './interfaces/IERC20.sol';
 
 contract ERC20Instance is IERC20 {
     address public immutable erc20address;
@@ -17,7 +17,7 @@ contract ERC20Instance is IERC20 {
     }
 
     function name() external view override returns (string memory) {
-        (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature("name()"));
+        (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature('name()'));
         assembly {
             if eq(success, 0) {
                 revert(add(returnData, 0x20), returndatasize())
@@ -29,7 +29,7 @@ contract ERC20Instance is IERC20 {
 
     function symbol() external view override returns (string memory) {
         // We nominate our target collator with all the tokens provided
-        (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature("symbol()"));
+        (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature('symbol()'));
         assembly {
             if eq(success, 0) {
                 revert(add(returnData, 0x20), returndatasize())
@@ -42,9 +42,7 @@ contract ERC20Instance is IERC20 {
     function balanceOf(address who) external view override returns (uint256) {
         // We nominate our target collator with all the tokens provided
         // return erc20.balanceOf(who);
-        (bool success, bytes memory returnData) = erc20address.staticcall(
-            abi.encodeWithSignature("balanceOf(address)", who)
-        );
+        (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature('balanceOf(address)', who));
         assembly {
             if eq(success, 0) {
                 revert(add(returnData, 0x20), returndatasize())
@@ -55,7 +53,7 @@ contract ERC20Instance is IERC20 {
     }
 
     function decimals() external view override returns (uint8) {
-        (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature("decimals()"));
+        (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature('decimals()'));
         assembly {
             if eq(success, 0) {
                 revert(add(returnData, 0x20), returndatasize())
@@ -66,7 +64,7 @@ contract ERC20Instance is IERC20 {
     }
 
     function totalSupply() external view override returns (uint256) {
-        (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature("totalSupply()"));
+        (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature('totalSupply()'));
         assembly {
             if eq(success, 0) {
                 revert(add(returnData, 0x20), returndatasize())
@@ -76,15 +74,10 @@ contract ERC20Instance is IERC20 {
         return abi.decode(returnData, (uint256));
     }
 
-    
-
-    function allowance(address owner, address spender)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        (bool success, bytes memory returnData) = erc20address.staticcall(abi.encodeWithSignature("allowance(address,address)",owner,spender));
+    function allowance(address owner, address spender) external view override returns (uint256) {
+        (bool success, bytes memory returnData) = erc20address.staticcall(
+            abi.encodeWithSignature('allowance(address,address)', owner, spender)
+        );
         assembly {
             if eq(success, 0) {
                 revert(add(returnData, 0x20), returndatasize())
@@ -94,13 +87,8 @@ contract ERC20Instance is IERC20 {
         return abi.decode(returnData, (uint256));
     }
 
-    function mint(address to, uint256 value)
-        external
-        returns (bool)
-    {
-        (bool success, bytes memory returnData) = erc20address.call(
-            abi.encodeWithSignature("mint(address,uint256)", to, value)
-        );
+    function mint(address to, uint256 value) external returns (bool) {
+        (bool success, bytes memory returnData) = erc20address.call(abi.encodeWithSignature('mint(address,uint256)', to, value));
         assembly {
             if eq(success, 0) {
                 revert(add(returnData, 0x20), returndatasize())
@@ -109,13 +97,8 @@ contract ERC20Instance is IERC20 {
         return true;
     }
 
-    function burn(address from, uint256 value)
-        external
-        returns (bool)
-    {
-        (bool success, bytes memory returnData) = erc20address.call(
-            abi.encodeWithSignature("burn(address,uint256)", from, value)
-        );
+    function burn(address from, uint256 value) external returns (bool) {
+        (bool success, bytes memory returnData) = erc20address.call(abi.encodeWithSignature('burn(address,uint256)', from, value));
         assembly {
             if eq(success, 0) {
                 revert(add(returnData, 0x20), returndatasize())
@@ -124,14 +107,8 @@ contract ERC20Instance is IERC20 {
         return true;
     }
 
-    function transfer(address to, uint256 value)
-        external
-        override
-        returns (bool)
-    {
-        (bool success, bytes memory returnData) = erc20address.call(
-            abi.encodeWithSignature("transfer(address,uint256)", to, value)
-        );
+    function transfer(address to, uint256 value) external override returns (bool) {
+        (bool success, bytes memory returnData) = erc20address.call(abi.encodeWithSignature('transfer(address,uint256)', to, value));
         assembly {
             if eq(success, 0) {
                 revert(add(returnData, 0x20), returndatasize())
@@ -140,21 +117,12 @@ contract ERC20Instance is IERC20 {
         return true;
     }
 
-    function transfer_delegate(address to, uint256 value) pure
-        external
-        returns (bool)
-    {
+    function transfer_delegate(address to, uint256 value) external pure returns (bool) {
         revert();
     }
 
-    function approve(address spender, uint256 value)
-        external
-        override
-        returns (bool)
-    {
-        (bool success, bytes memory returnData) = erc20address.call(
-            abi.encodeWithSignature("approve(address,uint256)", spender, value)
-        );
+    function approve(address spender, uint256 value) external override returns (bool) {
+        (bool success, bytes memory returnData) = erc20address.call(abi.encodeWithSignature('approve(address,uint256)', spender, value));
         assembly {
             if eq(success, 0) {
                 revert(add(returnData, 0x20), returndatasize())
@@ -163,10 +131,7 @@ contract ERC20Instance is IERC20 {
         return true;
     }
 
-    function approve_delegate(address spender, uint256 value) pure
-        external
-        returns (bool)
-    {
+    function approve_delegate(address spender, uint256 value) external pure returns (bool) {
         revert();
     }
 
@@ -176,7 +141,7 @@ contract ERC20Instance is IERC20 {
         uint256 value
     ) external override returns (bool) {
         (bool success, bytes memory returnData) = erc20address.call(
-            abi.encodeWithSignature("transferFrom(address,address,uint256)", from, to, value)
+            abi.encodeWithSignature('transferFrom(address,address,uint256)', from, to, value)
         );
         assembly {
             if eq(success, 0) {
@@ -190,7 +155,7 @@ contract ERC20Instance is IERC20 {
         address from,
         address to,
         uint256 value
-    ) pure external returns (bool) {
+    ) external pure returns (bool) {
         revert();
     }
 }

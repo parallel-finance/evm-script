@@ -8,9 +8,9 @@ import { AxelarExecutable } from '@axelar-network/axelar-gmp-sdk-solidity/contra
 import { Upgradable } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/upgradables/Upgradable.sol';
 import { StringToAddress, AddressToString } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/StringAddressUtils.sol';
 
-import "../interfaces/IERC20.sol";
+import '../interfaces/IERC20.sol';
 
-interface IERC20CrossChain{
+interface IERC20CrossChain {
     function transferRemote(
         string calldata destinationChain,
         address destinationAddress,
@@ -18,7 +18,7 @@ interface IERC20CrossChain{
     ) external payable;
 }
 
-contract ERC20CrossChain is AxelarExecutable,IERC20CrossChain,Upgradable {
+contract ERC20CrossChain is AxelarExecutable, IERC20CrossChain, Upgradable {
     using StringToAddress for string;
     using AddressToString for address;
 
@@ -31,13 +31,13 @@ contract ERC20CrossChain is AxelarExecutable,IERC20CrossChain,Upgradable {
 
     IERC20Plus public erc20Token;
 
-    constructor(address gatewayAddress_,address gasReceiver_) AxelarExecutable(gatewayAddress_) { 
+    constructor(address gatewayAddress_, address gasReceiver_) AxelarExecutable(gatewayAddress_) {
         gasReceiver = IAxelarGasService(gasReceiver_);
     }
 
     function _setup(bytes calldata params) internal override {
         address erc20Token_ = abi.decode(params, (address));
-        if(address(erc20Token) != address(0)) revert AlreadyInitialized();
+        if (address(erc20Token) != address(0)) revert AlreadyInitialized();
         erc20Token = IERC20Plus(erc20Token_);
     }
 

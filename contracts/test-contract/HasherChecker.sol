@@ -3,10 +3,7 @@ pragma solidity >=0.8.0;
 
 contract HasherChecker {
     function ripemd160Check() public pure {
-        require(
-            ripemd160(bytes("Hello World!")) ==
-                hex"8476ee4631b9b30ac2754b0ee0c47e161d3f724c"
-        );
+        require(ripemd160(bytes('Hello World!')) == hex'8476ee4631b9b30ac2754b0ee0c47e161d3f724c');
     }
 
     function bn128AdditionCheck() public {
@@ -26,17 +23,9 @@ contract HasherChecker {
             // 64       size of return value, i.e. 64 bytes / 512 bit for a BN256 curve point
             success := call(not(0), 0x06, 0, input, 128, result, 64)
         }
-        require(success, "elliptic curve addition failed");
-        require(
-            result[0] ==
-                0x2bd3e6d0f3b142924f5ca7b49ce5b9d54c4703d7ae5648e61d02268b1a0a9fb7,
-            "failed"
-        );
-        require(
-            result[1] ==
-                0x21611ce0a6af85915e2f1d70300909ce2e49dfad4a4619c8390cae66cefdb204,
-            "failed"
-        );
+        require(success, 'elliptic curve addition failed');
+        require(result[0] == 0x2bd3e6d0f3b142924f5ca7b49ce5b9d54c4703d7ae5648e61d02268b1a0a9fb7, 'failed');
+        require(result[1] == 0x21611ce0a6af85915e2f1d70300909ce2e49dfad4a4619c8390cae66cefdb204, 'failed');
     }
 
     function bn128MultiplyCheck() public {
@@ -55,17 +44,9 @@ contract HasherChecker {
             // 64       size of return value, i.e. 64 bytes / 512 bit for a BN256 curve point
             success := call(not(0), 0x07, 0, input, 96, result, 64)
         }
-        require(success, "elliptic curve addition failed");
-        require(
-            result[0] ==
-                0x1a87b0584ce92f4593d161480614f2989035225609f08058ccfa3d0f940febe3,
-            "failed"
-        );
-        require(
-            result[1] ==
-                0x163511ddc1c3f25d396745388200081287b3fd1472d8339d5fecb2eae0830451,
-            "failed"
-        );
+        require(success, 'elliptic curve addition failed');
+        require(result[0] == 0x1a87b0584ce92f4593d161480614f2989035225609f08058ccfa3d0f940febe3, 'failed');
+        require(result[1] == 0x163511ddc1c3f25d396745388200081287b3fd1472d8339d5fecb2eae0830451, 'failed');
     }
 
     function bn128PairingCheck() public {
@@ -93,8 +74,8 @@ contract HasherChecker {
             // 32       size of result (one 32 byte boolean!)
             success := call(sub(gas(), 2000), 0x08, 0, input, 384, result, 32)
         }
-        require(success, "elliptic curve pairing failed");
-        require(result[0] == 1, "failed");
+        require(success, 'elliptic curve pairing failed');
+        require(result[0] == 1, 'failed');
     }
 
     function modExpWrapper(
@@ -138,23 +119,10 @@ contract HasherChecker {
     ) public view returns (bytes32[2] memory) {
         bytes32[2] memory output;
 
-        bytes memory args = abi.encodePacked(
-            rounds,
-            h[0],
-            h[1],
-            m[0],
-            m[1],
-            m[2],
-            m[3],
-            t[0],
-            t[1],
-            f
-        );
+        bytes memory args = abi.encodePacked(rounds, h[0], h[1], m[0], m[1], m[2], m[3], t[0], t[1], f);
 
         assembly {
-            if iszero(
-                staticcall(not(0), 0x09, add(args, 32), 0xd5, output, 0x40)
-            ) {
+            if iszero(staticcall(not(0), 0x09, add(args, 32), 0xd5, output, 0x40)) {
                 revert(0, 0)
             }
         }
@@ -166,30 +134,18 @@ contract HasherChecker {
         uint32 rounds = 12;
 
         bytes32[2] memory h;
-        h[
-            0
-        ] = hex"48c9bdf267e6096a3ba7ca8485ae67bb2bf894fe72f36e3cf1361d5f3af54fa5";
-        h[
-            1
-        ] = hex"d182e6ad7f520e511f6c3e2b8c68059b6bbd41fbabd9831f79217e1319cde05b";
+        h[0] = hex'48c9bdf267e6096a3ba7ca8485ae67bb2bf894fe72f36e3cf1361d5f3af54fa5';
+        h[1] = hex'd182e6ad7f520e511f6c3e2b8c68059b6bbd41fbabd9831f79217e1319cde05b';
 
         bytes32[4] memory m;
-        m[
-            0
-        ] = hex"6162630000000000000000000000000000000000000000000000000000000000";
-        m[
-            1
-        ] = hex"0000000000000000000000000000000000000000000000000000000000000000";
-        m[
-            2
-        ] = hex"0000000000000000000000000000000000000000000000000000000000000000";
-        m[
-            3
-        ] = hex"0000000000000000000000000000000000000000000000000000000000000000";
+        m[0] = hex'6162630000000000000000000000000000000000000000000000000000000000';
+        m[1] = hex'0000000000000000000000000000000000000000000000000000000000000000';
+        m[2] = hex'0000000000000000000000000000000000000000000000000000000000000000';
+        m[3] = hex'0000000000000000000000000000000000000000000000000000000000000000';
 
         bytes8[2] memory t;
-        t[0] = hex"03000000";
-        t[1] = hex"00000000";
+        t[0] = hex'03000000';
+        t[1] = hex'00000000';
 
         bool f = true;
 
@@ -198,15 +154,7 @@ contract HasherChecker {
         // 7d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923
 
         bytes32[2] memory result = blake2Wrapper(rounds, h, m, t, f);
-        require(
-            result[0] ==
-                0xba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d1,
-            "failed"
-        );
-        require(
-            result[1] ==
-                0x7d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923,
-            "failed"
-        );
+        require(result[0] == 0xba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d1, 'failed');
+        require(result[1] == 0x7d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923, 'failed');
     }
 }

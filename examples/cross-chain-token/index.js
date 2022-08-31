@@ -1,5 +1,3 @@
-'use strict';
-
 const {
     getDefaultProvider,
     Contract,
@@ -22,7 +20,7 @@ async function deploy(chain, wallet) {
         wallet,
         ERC20CrossChain,
         ERC20CrossChainProxy,
-        [chain.gateway, chain.gasReceiver,decimals],
+        [chain.gateway, chain.gasReceiver, decimals],
         [],
         defaultAbiCoder.encode(['string', 'string'], [name, symbol]),
         'ERC20CrossChain',
@@ -42,7 +40,7 @@ async function test(chains, wallet, options) {
             chain.wallet,
             ERC20CrossChain,
             ERC20CrossChainProxy,
-            [chain.gateway, chain.gasReceiver,decimals],
+            [chain.gateway, chain.gasReceiver, decimals],
             [],
             defaultAbiCoder.encode(['string', 'string'], [name, symbol]),
             'ERC20CrossChain',
@@ -77,7 +75,7 @@ async function test(chains, wallet, options) {
     await (
         await source.contract.transferRemote(destination.name, wallet.address, amount, { value: BigInt(Math.floor(gasLimit * gasPrice)) })
     ).wait();
-    
+
     while ((await destination.contract.balanceOf(wallet.address)).toNumber() === initialBalance) {
         await sleep(2000);
     }

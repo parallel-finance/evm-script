@@ -1,0 +1,8 @@
+{
+  "gateway": "0xD9C3b5474f1ec7578E3549BAd3ce266bAa5c2D3c",
+  "gasReceiver": "0x5737A424F8e9A0dbA8701A4cDaB8E425F9031b33",
+  "constAddressDeployer": "0xB1D1F00B6Cd1e148410B50F319BcbFa65ea367b6",
+  "crossChainToken": "0x4fD879b5ea331d1EDBB962A1aF21B6F665396bD5",
+  "erc20TokenAddress": "0x199fD664A36c139a4E5AE776456d63069c4701d9",
+  "erc20SS58Address": "hJHpVgvAmp1gq2TREyMDFxk81xhAUS7zobaGKT6KJdP9tVg8t"
+}
