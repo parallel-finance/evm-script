@@ -12,7 +12,7 @@ const {
 } = require('@axelar-network/axelar-local-dev');
 const fs = require('fs-extra');
 
-const examples = [
+const tests = [
   'cross-chain-token',
 ];
 
@@ -36,15 +36,15 @@ describe('bridge', function () {
     await stopAll();
   });
 
-  for (const exampleName of examples) {
-    const example = require(`../examples/${exampleName}/index.js`);
-    it(exampleName, async () => {
+  for (const testName of tests) {
+    const testCase = require(`./${testName}.js`);
+    it(testName, async () => {
       const chains = fs.readJsonSync('./info/local.json');
 
       const wallet = new Wallet(deployer_key);
-      if (example.deploy) await deploy('local', chains, wallet, example);
+      if (testCase.deploy) await deploy('local', chains, wallet, testCase);
 
-      await test('local', chains, [], wallet, example);
+      await test('local', chains, [], wallet, testCase);
     });
   }
 });

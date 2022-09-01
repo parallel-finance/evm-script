@@ -1,8 +1,8 @@
 {
-  "gateway": "0x28a3577673719C0aF4a9ea2105ae70cD9D8ab4a8",
-  "gasReceiver": "0xA9c5BF0b1782B38118c07e737bf475b2C58451d2",
-  "constAddressDeployer": "0xcdfC8fDb05cdFc249bA51c4bbB71044726F5ce63",
-  "crossChainTokenExecutor": "0x65c457303efe2cFc84c8505239082Cb04cC9bb88",
-  "erc20TokenAddress": "0xeb8ae23EB273fBBEfA9DFebCcf2B5df48ABcb169",
-  "erc20SS58Address": "hJGiKqJeyPhXsqqnU8YZG3ywPPrwrNrzKTg3zU3nd66RfEBG9"
+  "gateway": "0x3fd5839dd5306E26cB2fcc085F1a97eFd50E317B",
+  "gasReceiver": "0x2Af662178244154D5f646Fe3F83C79999b1EA980",
+  "constAddressDeployer": "0xAc535fCb41684e081968ab7B4FE8475451D56474",
+  "crossChainTokenExecutor": "0x86548fc115EDa3806fAAAB5afa8fCD5bCF31a7E6",
+  "erc20TokenAddress": "0x49bC008df086F97722fafE7D4409C727c5E36131",
+  "erc20SS58Address": "hJGg1Ucvg3NLUTMhkLQT6dJqSATphmmFZZ4FWwWNs2Kj18Xgq"
 }

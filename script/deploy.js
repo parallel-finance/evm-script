@@ -4,11 +4,13 @@ const { defaultAbiCoder, arrayify, keccak256, toUtf8Bytes } = utils;
 const fs = require('fs-extra');
 const { deployContract, setJSON,logger,getSignedExecuteInput, getRandomID } = require('./utils');
 const { deployContractConstant, predictContractConstant } = require('./constAddressDeployer');
+const { deployUpgradable } = require('./upgradable');
 const polkadotCryptoUtils = require('@polkadot/util-crypto');
 
 const ConstAddressDeployer = require('../artifacts/contracts/pre-deploy/ConstAddressDeployer.sol/ConstAddressDeployer.json');
 const ERC20PrecompileInstance = require('../artifacts/contracts/pre-deploy/ERC20Precompile.sol/ERC20Instance.json');
 const ERC20CrossChainExecutor = require('../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChain.sol/ERC20CrossChain.json');
+const ERC20CrossChainExecutorProxy = require('../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChainProxy.sol/ERC20CrossChainProxy.json');
 
 const TokenDeployer = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/TokenDeployer.sol/TokenDeployer.json');
 const Auth = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/auth/AxelarAuthWeighted.sol/AxelarAuthWeighted.json');
@@ -25,7 +27,8 @@ const providerRPC = {
     rpc: (process.env.RPC_URL) || 'http://127.0.0.1:29933',
     chainId: (process.env.CHAIN_ID) || 592,
     addressPrefix: (process.env.SS58_PREFIX) || 110,
-    deployKey: 'parallel-evm-deployer'
+    deployKey: 'parallel-evm-deployer',
+    maxGasLimit: 4_000_000,
   },
 };
 
@@ -119,47 +122,82 @@ const deploy_bridge = async () => {
 };
 
 const _deployGateway = async () => {
-  logger.log(`Deploying the Axelar Gateway... `);
-
-  const params = arrayify(
-      defaultAbiCoder.encode(
-          ['address[]', 'uint8', 'bytes'],
-          [[wallet.address], 3, '0x']
-      )
-  );
-  const auth = await deployContract(wallet, Auth, [
+  logger.log(`Deploying Axelar Gateway... `);
+  const deployer = contract_info.constAddressDeployer;
+  const deployKey = providerRPC.chain.deployKey;
+  const auth = await deployContractConstant(
+    deployer,
+    wallet,
+    Auth,
+    deployKey,
+    [
       [defaultAbiCoder.encode(['address[]', 'uint256[]', 'uint256'], [[wallet.address], [1], 1])],
-  ]);
-  const tokenDeployer = await deployContract(wallet, TokenDeployer);
-  const _gateway = await deployContract(wallet, AxelarGateway, [auth.address, tokenDeployer.address]);
-  // todo: need to enable delegate call
-  // const proxy = await deployContract(wallet, AxelarGatewayProxy, [_gateway.address, params]);
-  // await (await auth.transferOwnership(proxy.address)).wait();
-  // gateway = new Contract(proxy.address, IAxelarGateway.abi, provider);
-  logger.log(`Gateway Deployed at ${_gateway.address}`);
-  contract_info.gateway = _gateway.address;
+    ],
+  );
+  logger.log(`Auth Deployed at ${auth.address}`);
+  const tokenDeployer = await deployContractConstant(
+    deployer,
+    wallet,
+    TokenDeployer,
+    deployKey,
+  );
+  logger.log(`TokenDeployer Deployed at ${tokenDeployer.address}`);
+  const _gateway = await deployContractConstant(
+    deployer,
+    wallet,
+    AxelarGateway,
+    deployKey,
+    [auth.address, tokenDeployer.address],
+    //need manually set, estimateGas will fail and need furthur investigate
+    providerRPC.chain.maxGasLimit,
+  );
+  logger.log(`AxelarGateway Deployed at ${_gateway.address}`);
+  const params = arrayify(
+    defaultAbiCoder.encode(
+        ['address[]', 'uint8', 'bytes'],
+        [[wallet.address], 3, '0x']
+    )
+  );
+  const proxy = await deployContractConstant(deployer, wallet, 
+    AxelarGatewayProxy, deployKey,[_gateway.address, params],
+    providerRPC.chain.maxGasLimit,
+  );
+  logger.log(`AxelarGatewayProxy Deployed at ${proxy.address}`);
+  await auth.transferOwnership(proxy.address,{gasPrice: 1e9, gasLimit: 1e6});
+  const gateway = new Contract(proxy.address, IAxelarGateway.abi, provider);
+  contract_info.gateway = gateway.address;
 }
 
 const _deployGasReceiver = async() => {
-  logger.log(`Deploying the Axelar Gas Receiver ... `);
-  const gasReceiver = await deployContract(wallet, AxelarGasReceiver, []);
-  // const gasReceiverProxy = await deployContract(wallet, AxelarGasReceiverProxy);
-  // await gasReceiverProxy.init(gasReceiver.address, wallet.address, '0x');
-  // gasReceiver = new Contract(gasReceiverProxy.address, AxelarGasReceiver.abi, provider);
-  logger.log(`GasReceiver Deployed at ${gasReceiver.address}`);
-  contract_info.gasReceiver = gasReceiver.address;
+  logger.log(`Deploying Axelar Gas Receiver ... `);
+  const deployer = contract_info.constAddressDeployer;
+  const deployKey = providerRPC.chain.deployKey;
+  const _gasReceiver = await deployContractConstant(
+    deployer,
+    wallet,
+    AxelarGasReceiver,
+    deployKey,
+    [],
+  );
+  logger.log(`GasReceiver Deployed at ${_gasReceiver.address}`);
+  
+  const gasReceiverProxy = await deployContractConstant(deployer,wallet, AxelarGasReceiverProxy,deployKey);
+  await gasReceiverProxy.init(_gasReceiver.address, wallet.address, '0x', {gasPrice: 1e9, gasLimit: 1e6});
+  logger.log(`gasReceiverProxy Deployed at ${gasReceiverProxy.address}`)
+  contract_info.gasReceiver = gasReceiverProxy.address;
 }
 
 const _deployCrossChainExecutor = async() => {
   console.log(`Deploying ERC20CrossChainExecutor ...`);
   const deployer = contract_info.constAddressDeployer;
   const deployKey = providerRPC.chain.deployKey;
-  const crosschainExecutor = await deployContractConstant(
+  const crosschainExecutor = await deployUpgradable(
     deployer,
     wallet,
     ERC20CrossChainExecutor,
-    deployKey,
-    [contract_info.gateway, contract_info.gasReceiver, contract_info.erc20TokenAddress]
+    ERC20CrossChainExecutorProxy,
+    [contract_info.gateway, contract_info.gasReceiver, contract_info.erc20TokenAddress],
+    deployKey
   );
   contract_info.crossChainTokenExecutor = crosschainExecutor.address;
   console.log(`Deployed ERC20CrossChainExecutor at ${crosschainExecutor.address}`);
@@ -173,6 +211,7 @@ const test = async () => {
 const mint = async () => {
   contract_info = await fs.readJson(deployed_info_file);
   const token_address = contract_info.erc20TokenAddress;
+  console.log('ERC20 Token Address:' + token_address);
   const erc20_token = new ethers.Contract(token_address, ERC20PrecompileInstance.abi, wallet);
   // check name is same as in asset pallet
   console.log(`ERC20Token name is ${await erc20_token.name()}`);

@@ -4,11 +4,11 @@ const {
   ContractFactory,
   utils: { keccak256 },
 } = require('ethers');
-const { deployAndInitContractConstant } = require('./constAddressDeployer');
+const { deployAndInitContractConstant,deployContractConstant } = require('./constAddressDeployer');
 
 const IUpgradable = require('../artifacts/contracts/pre-deploy/interfaces/IUpgradable.sol/IUpgradable.json');
 
-async function deployUpgradable (
+async function deployUpgradableWithInit (
   constAddressDeployerAddress,
   wallet,
   implementationJson,
@@ -36,8 +36,42 @@ async function deployUpgradable (
     key,
     proxyConstructorArgs,
     [implementation.address, wallet.address, setupParams],
-    1e6,
+    4e6,
   );
+
+  return new Contract(proxy.address, implementationJson.abi, wallet);
+}
+
+async function deployUpgradable (
+  constAddressDeployerAddress,
+  wallet,
+  implementationJson,
+  proxyJson,
+  implementationConstructorArgs = [],
+  key,
+) {
+  const implementationFactory = new ContractFactory(
+    implementationJson.abi,
+    implementationJson.bytecode,
+    wallet,
+  );
+
+  const implementation = await implementationFactory.deploy(
+    ...implementationConstructorArgs,
+  );
+  await implementation.deployed();
+
+  const proxy = await deployContractConstant(
+    constAddressDeployerAddress,
+    wallet,
+    proxyJson,
+    key,
+    // proxyConstructorArgs,
+    [],
+    4e6,
+  );
+  
+  await proxy.init(implementation.address, wallet.address, '0x', {gasPrice: 1000000000, gasLimit: 1e6});
 
   return new Contract(proxy.address, implementationJson.abi, wallet);
 }

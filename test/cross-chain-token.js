@@ -6,8 +6,8 @@ const {
 } = require('ethers');
 const { deployUpgradable } = require('@axelar-network/axelar-gmp-sdk-solidity');
 
-const ERC20CrossChainProxy = require('../../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChainProxy.sol/ERC20CrossChainProxy.json');
-const ERC20CrossChain = require('../../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChainTest.sol/ERC20CrossChain.json');
+const ERC20CrossChainProxy = require('../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChainProxy.sol/ERC20CrossChainProxy.json');
+const ERC20CrossChain = require('../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChainTest.sol/ERC20CrossChain.json');
 
 const name = 'DAI';
 const symbol = 'DAI';
