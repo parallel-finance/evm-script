@@ -18,26 +18,48 @@ interface IERC20CrossChain {
     ) external payable;
 }
 
-contract ERC20CrossChain is AxelarExecutable, Upgradable, IERC20CrossChain {
+contract ERC20CrossChain is AxelarExecutable, IERC20CrossChain {
     using StringToAddress for string;
     using AddressToString for address;
 
     error AlreadyInitialized();
-    error ZeroAddress();
+    error NotOwner();
+    error InvalidOwner();
 
     event FalseSender(string sourceChain, string sourceAddress);
 
     IAxelarGasService public immutable gasReceiver;
 
-    IERC20Plus public erc20Token;
+    address public immutable erc20address;
+
+    address owner;
 
     constructor(address gatewayAddress_, address gasReceiver_, address erc20Token_) AxelarExecutable(gatewayAddress_) {
         gasReceiver = IAxelarGasService(gasReceiver_);
-        erc20Token = IERC20Plus(erc20Token_);
+        erc20address = erc20Token_;
     }
 
-    function _setup(bytes calldata params) internal override {
+    modifier onlyOwner() {
+        if (owner != msg.sender) revert NotOwner();
+        _;
+    }
+
+    function setupOwner(address _owner) external {
+        if (owner != address(0)) revert AlreadyInitialized();
+        owner = _owner;
+    }
+
+    function transferOwnership(address _owner) external onlyOwner {
+        if (_owner == address(0)) revert InvalidOwner();
+        owner = _owner;
+    } 
+
+    function _setup(bytes calldata params) internal {
         
+    }
+
+    function contractId() external pure returns (bytes32) {
+        return keccak256('ERC20CrossChain');
     }
 
     function transferRemote(
@@ -45,7 +67,7 @@ contract ERC20CrossChain is AxelarExecutable, Upgradable, IERC20CrossChain {
         address destinationAddress,
         uint256 amount
     ) public payable override {
-        erc20Token.burn(msg.sender, amount);
+        _burn(msg.sender, amount);
         bytes memory payload = abi.encode(destinationAddress, amount);
         string memory stringAddress = address(this).toString();
         if (msg.value > 0) {
@@ -70,10 +92,34 @@ contract ERC20CrossChain is AxelarExecutable, Upgradable, IERC20CrossChain {
             return;
         }
         (address to, uint256 amount) = abi.decode(payload, (address, uint256));
-        erc20Token.mint(to, amount);
+        _mint(to, amount);
     }
 
-    function contractId() external pure returns (bytes32) {
-        return keccak256('ERC20CrossChain');
+    function burn(address from, uint256 value) external onlyOwner {
+        _burn(from,value);
+    }
+
+    function _burn(address from, uint256 value) internal {
+        // erc20Token.burn(from, value);
+        (bool success, bytes memory returnData) = erc20address.call(abi.encodeWithSignature('burn(address,uint256)', from, value));
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
+    }
+
+    function mint(address to, uint256 value) external onlyOwner {
+        _mint(to,value);
+    }
+
+    function _mint(address to, uint256 value) internal {
+        // erc20Token.mint(to, value);
+        (bool success, bytes memory returnData) = erc20address.call(abi.encodeWithSignature('mint(address,uint256)', to, value));
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
     }
 }

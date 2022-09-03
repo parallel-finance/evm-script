@@ -8,9 +8,10 @@ const { deployUpgradable } = require('./upgradable');
 const polkadotCryptoUtils = require('@polkadot/util-crypto');
 
 const ConstAddressDeployer = require('../artifacts/contracts/pre-deploy/ConstAddressDeployer.sol/ConstAddressDeployer.json');
+
 const ERC20PrecompileInstance = require('../artifacts/contracts/pre-deploy/ERC20Precompile.sol/ERC20Instance.json');
+
 const ERC20CrossChainExecutor = require('../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChain.sol/ERC20CrossChain.json');
-const ERC20CrossChainExecutorProxy = require('../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChainProxy.sol/ERC20CrossChainProxy.json');
 
 const TokenDeployer = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/TokenDeployer.sol/TokenDeployer.json');
 const Auth = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/auth/AxelarAuthWeighted.sol/AxelarAuthWeighted.json');
@@ -32,11 +33,14 @@ const providerRPC = {
   },
 };
 
+const ALICE = '0x8097c3C354652CB1EEed3E5B65fBa2576470678A' 
+const ALICEKEY = '0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a'
+
 // we fund alice in substrate chain spec as admin
 const accountOfAdmin = {
-  address: (process.env.ADMIN_ADDRESS) || '0x8097c3C354652CB1EEed3E5B65fBa2576470678A',
+  address: (process.env.ADMIN_ADDRESS) || ALICE,
   // alice's key is no secret
-  privateKey: (process.env.ADMIN_PRIVATE_KEY) || '0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a',
+  privateKey: (process.env.ADMIN_PRIVATE_KEY) || ALICEKEY
 };
 
 // mapping to asset with id=1(assuming dai) which is created in asset pallet
@@ -60,6 +64,7 @@ let contract_info = {
   gasReceiver: '0x',
   constAddressDeployer: '0x',
   crossChainTokenExecutor: '0x',
+  ss58CrossChainTokenExecutor: '0x',
   erc20TokenAddress: '0x',
   erc20SS58Address: '',
 };
@@ -79,40 +84,14 @@ const init = async () => {
   const deployer = (await deployContract(wallet, ConstAddressDeployer)).address;
   console.log(`constAddressDeployer deployed to ${deployer}`);
   contract_info.constAddressDeployer = deployer;
+  await _deployToken()
   setJSON(contract_info, deployed_info_file);
 };
 
 const deploy = async () => {
   contract_info = await fs.readJson(deployed_info_file);
-  await deploy_token();
   await deploy_bridge();
   setJSON(contract_info, deployed_info_file);
-};
-
-// use ConstAddressDeployer
-const deploy_token = async () => {
-  logger.log(`Deploying ERC20 Token... `);
-  const deployer = contract_info.constAddressDeployer;
-  const deployKey = providerRPC.chain.deployKey;
-  const token_address = await predictContractConstant(
-    deployer,
-    wallet,
-    ERC20PrecompileInstance,
-    deployKey,
-    [asset_address],
-  );
-  console.log(`predict ERC20Token deployed to ${token_address}`);
-  const token_contract = await deployContractConstant(
-    deployer,
-    wallet,
-    ERC20PrecompileInstance,
-    deployKey,
-    [asset_address],
-  );
-  console.log(`ERC20Token deployed to ${await token_contract.address}`);
-  contract_info.erc20TokenAddress = (await token_contract.address);
-  contract_info.erc20SS58Address = polkadotCryptoUtils.evmToAddress(contract_info.erc20TokenAddress, providerRPC.chain.addressPrefix);
-  console.log('erc20SS58Address is:' + contract_info.erc20SS58Address);
 };
 
 const deploy_bridge = async () => {
@@ -183,43 +162,92 @@ const _deployGasReceiver = async() => {
   
   const gasReceiverProxy = await deployContractConstant(deployer,wallet, AxelarGasReceiverProxy,deployKey);
   await gasReceiverProxy.init(_gasReceiver.address, wallet.address, '0x', {gasPrice: 1e9, gasLimit: 1e6});
-  logger.log(`gasReceiverProxy Deployed at ${gasReceiverProxy.address}`)
+  logger.log(`gasReceiverProxy Deployed and initialzed at ${gasReceiverProxy.address}`)
   contract_info.gasReceiver = gasReceiverProxy.address;
 }
+
+const _deployToken = async () => {
+  logger.log(`Deploying ERC20 Token... `);
+  const deployer = contract_info.constAddressDeployer;
+  const deployKey = providerRPC.chain.deployKey;
+  //contract address can be predicted
+  const token_address = await predictContractConstant(
+    deployer,
+    wallet,
+    ERC20PrecompileInstance,
+    deployKey,
+    [asset_address],
+  );
+  console.log(`predict ERC20Token deployed to ${token_address}`);
+  const token_contract = await deployContractConstant(
+    deployer,
+    wallet,
+    ERC20PrecompileInstance,
+    deployKey,
+    [asset_address],
+  );
+  console.log(`ERC20Token deployed to ${await token_contract.address}`);
+
+  const approveCall = await token_contract.setupOwner(wallet.address,{gasPrice: 1e9, gasLimit: 1e6})
+  await approveCall.wait();
+  console.log('ERC20Token reset ownership');
+  
+  contract_info.erc20TokenAddress = (await token_contract.address);
+  contract_info.erc20SS58Address = polkadotCryptoUtils.evmToAddress(contract_info.erc20TokenAddress, providerRPC.chain.addressPrefix);
+  console.log('erc20SS58Address is: ' + contract_info.erc20SS58Address);
+    
+};
 
 const _deployCrossChainExecutor = async() => {
   console.log(`Deploying ERC20CrossChainExecutor ...`);
   const deployer = contract_info.constAddressDeployer;
   const deployKey = providerRPC.chain.deployKey;
-  const crosschainExecutor = await deployUpgradable(
+  //for precompiles not support delegate call behind proxy
+  //so not deploy with proxy here
+  const crosschainExecutor = await deployContractConstant(
     deployer,
     wallet,
     ERC20CrossChainExecutor,
-    ERC20CrossChainExecutorProxy,
-    [contract_info.gateway, contract_info.gasReceiver, contract_info.erc20TokenAddress],
-    deployKey
+    deployKey,
+    [contract_info.gateway, contract_info.gasReceiver, asset_address],
   );
+  const resetOwnerCall = await crosschainExecutor.setupOwner(wallet.address,{gasPrice: 1e9, gasLimit: 1e6});
+  await resetOwnerCall.wait();
+
   contract_info.crossChainTokenExecutor = crosschainExecutor.address;
   console.log(`Deployed ERC20CrossChainExecutor at ${crosschainExecutor.address}`);
+  contract_info.ss58CrossChainTokenExecutor = polkadotCryptoUtils.evmToAddress(contract_info.crossChainTokenExecutor, providerRPC.chain.addressPrefix);
+  console.log(`ERC20CrossChainExecutor's ss58 mapping address is: ${contract_info.ss58CrossChainTokenExecutor}`)
+  
+  const erc20_token = new Contract(contract_info.erc20TokenAddress, ERC20PrecompileInstance.abi, wallet);
+  const approveCall = await erc20_token.setupOperators([crosschainExecutor.address,wallet.address],{gasPrice: 1e9, gasLimit: 1e6})
+  await approveCall.wait();
+  console.log('approve ERC20CrossChainExecutor as ERC20Token Operator');
 }
 
 const test = async () => {
   await mint();
 };
 
-// before test we need manually set owner of asset to token contract
+// before this mint test we need manually set owner of asset to ss58 mapping of executor contract
 const mint = async () => {
   contract_info = await fs.readJson(deployed_info_file);
   const token_address = contract_info.erc20TokenAddress;
   console.log('ERC20 Token Address:' + token_address);
-  const erc20_token = new ethers.Contract(token_address, ERC20PrecompileInstance.abi, wallet);
+  const erc20_token = new Contract(contract_info.erc20TokenAddress, ERC20PrecompileInstance.abi, wallet);
   // check name is same as in asset pallet
   console.log(`ERC20Token name is ${await erc20_token.name()}`);
-  console.log(`ERC20Token init balance is ${await erc20_token.balanceOf(accountOfAdmin.address)}`);
-  await (await erc20_token.mint(accountOfAdmin.address, ethers.utils.parseEther('1.0'))).wait();
+  //since we add authentication, now only executor can mint/burn
+  // await (await erc20_token.mint(accountOfAdmin.address, ethers.utils.parseEther('1.0'),{gasPrice: 1e9, gasLimit: 1e6})).wait();
+  // console.log(`ERC20Token balance after mint is ${await erc20_token.balanceOf(accountOfAdmin.address)}`);
+  // // await (await erc20_token.burn(accountOfAdmin.address, ethers.utils.parseEther('0.5'),{gasPrice: 1e9, gasLimit: 1e6})).wait();
+  // console.log(`ERC20Token balance after burn is ${await erc20_token.balanceOf(accountOfAdmin.address)}`); 
+  // //check executor can mint
+  const crosschainExecutor = new Contract(contract_info.crossChainTokenExecutor, ERC20CrossChainExecutor.abi, wallet);
+  await (await crosschainExecutor.mint(accountOfAdmin.address, ethers.utils.parseEther('1'),{gasPrice: 1e9, gasLimit: 1e6})).wait;
   console.log(`ERC20Token balance after mint is ${await erc20_token.balanceOf(accountOfAdmin.address)}`);
-  await (await erc20_token.burn(accountOfAdmin.address, ethers.utils.parseEther('0.5'))).wait();
-  console.log(`ERC20Token balance after burn is ${await erc20_token.balanceOf(accountOfAdmin.address)}`);
+  await (await crosschainExecutor.burn(accountOfAdmin.address, ethers.utils.parseEther('0.5'),{gasPrice: 1e9, gasLimit: 1e6})).wait;
+  console.log(`ERC20Token balance after mint is ${await erc20_token.balanceOf(accountOfAdmin.address)}`); 
 };
 
 (async () => {

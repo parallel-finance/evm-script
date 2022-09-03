@@ -10,7 +10,7 @@
     "lint:sol": "solhint 'contracts/**/*.sol' && prettier --write 'contracts/**/*.sol'",
     "slither": "npm run clean && slither . --detect reentrancy-eth,reentrancy-no-eth,reentrancy-unlimited-gas",
     "evm_2_ss58": "node script/address_converter.js 0x302F0B71B8aD3CF6dD90aDb668E49b2168d652fd",
-    "ss58_2_evm": "node script/address_converter.js hJGPPw4H2TarBvBrjehoRxD2HkBZwDe5JP4WA4YBpGwHHQkCD",
+    "ss58_2_evm": "node script/address_converter.js hJKzPoi3MQnSLvbShxeDmzbtHncrMXe5zwS3Wa36P6kXeNpcv",
     "erc20_slot": "node script/erc20_slot.js 0 0x34cfb6da89f12770442ce8997e44f06ebb279225",
     "check_address": "node script/check_sum_address.js ffffffff00000000000000000000000000000001",
     "test-bridge": "npx hardhat test --grep bridge",
@@ -37,7 +37,8 @@
     "@axelar-network/axelar-cgp-solidity": "^4.3.0",
     "@axelar-network/axelar-gmp-sdk-solidity": "^1.2.0",
     "@axelar-network/axelar-local-dev": "^1.1.0",
-    "@axelar-network/axelarjs-sdk": "^0.5.0-alpha.12"
+    "@axelar-network/axelarjs-sdk": "^0.5.0-alpha.12",
+    "@openzeppelin/contracts-upgradeable": "4.7.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.22",
@@ -53,7 +54,6 @@
     "solhint": "^3.3.7",
     "solidity-coverage": "^0.7.21",
     "mocha": "^10.0.0",
-    "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-mocha": "^10.0.3",

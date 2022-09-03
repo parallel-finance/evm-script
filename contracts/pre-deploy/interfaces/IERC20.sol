@@ -129,4 +129,5 @@ interface IERC20Plus is IERC20 {
      * Selector: 9dc29fac
      */
     function burn(address who, uint256 amount) external returns (bool);
+
 }

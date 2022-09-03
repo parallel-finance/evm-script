@@ -71,7 +71,7 @@ async function deployUpgradable (
     4e6,
   );
   
-  await proxy.init(implementation.address, wallet.address, '0x', {gasPrice: 1000000000, gasLimit: 1e6});
+  await (await proxy.init(implementation.address, wallet.address, '0x', {gasPrice: 1e9, gasLimit: 4e6})).wait;
 
   return new Contract(proxy.address, implementationJson.abi, wallet);
 }

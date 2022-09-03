@@ -130,7 +130,7 @@ contract HasherChecker {
         return output;
     }
 
-    function blake2Check() public {
+    function blake2Check() public view {
         uint32 rounds = 12;
 
         bytes32[2] memory h;
