@@ -12,7 +12,7 @@ const {asset_address,accountOfAdmin,providerRPC,provider,wallet,
   ERC20CrossChainExecutor,TokenDeployer,Auth,
   AxelarGasReceiver,AxelarGasReceiverProxy,
   AxelarGatewayProxy,AxelarGateway,IAxelarGateway,
-  getBalance} = require('./env')
+  getBalance} = require('../env')
 
 
 let contract_info = {

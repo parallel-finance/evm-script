@@ -56,7 +56,7 @@ describe('unit-test', function () {
 
 describe('live-test', function () {
   this.timeout(30000);
-  const {wallet,accountOfAdmin,targetAddress} = require('../script/axelar-bridge/env')
+  const {wallet,accountOfAdmin,targetAddress} = require('../script/env')
   const deployed_info_file = './info/contracts.json';
   let contract_info,token_address,erc20_token
   beforeEach(async () => {
@@ -89,7 +89,7 @@ describe('sign-test', function () {
   const ethers = require('ethers')
   const Web3 = require('web3')
   const { keccak256, defaultAbiCoder } = require('ethers/lib/utils')
-  const {wallet,accountOfAdmin,provider,providerRPC} = require('../script/axelar-bridge/env')
+  const {wallet,accountOfAdmin,provider,providerRPC} = require('../script/env')
   const web3 = new Web3(new Web3.providers.HttpProvider(providerRPC.chain.rpc));
   const { stringToU8a, bnToU8a, u8aConcat, u8aToHex } = require('@polkadot/util');
   it('personal sign',async()=>{

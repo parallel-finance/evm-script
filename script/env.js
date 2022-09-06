@@ -4,7 +4,7 @@ const providerRPC = {
     chain: {
       name: 'parallel-evm-chain',
       rpc: (process.env.RPC_URL) || 'http://127.0.0.1:29933',
-      chainId: (process.env.CHAIN_ID) || 592,
+      chainId: (process.env.CHAIN_ID) || 1592,
       addressPrefix: (process.env.SS58_PREFIX) || 110,
       deployKey: 'parallel-evm-deployer',
       maxGasLimit: 4_000_000,
@@ -39,16 +39,16 @@ const wallet = new ethers.Wallet(accountOfAdmin.privateKey, provider);
 
 const deployed_info_file = './info/contracts.json';
 
-const ConstAddressDeployer = require('../../artifacts/contracts/pre-deploy/ConstAddressDeployer.sol/ConstAddressDeployer.json');
-const ERC20PrecompileInstance = require('../../artifacts/contracts/pre-deploy/ERC20Precompile.sol/ERC20Instance.json');
-const ERC20CrossChainExecutor = require('../../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChain.sol/ERC20CrossChain.json');
-const TokenDeployer = require('../../artifacts/@axelar-network/axelar-cgp-solidity/contracts/TokenDeployer.sol/TokenDeployer.json');
-const Auth = require('../../artifacts/@axelar-network/axelar-cgp-solidity/contracts/auth/AxelarAuthWeighted.sol/AxelarAuthWeighted.json');
-const AxelarGasReceiver = require('../../artifacts/@axelar-network/axelar-cgp-solidity/contracts/gas-service/AxelarGasService.sol/AxelarGasService.json');
-const AxelarGasReceiverProxy = require('../../artifacts/@axelar-network/axelar-cgp-solidity/contracts/gas-service/AxelarGasServiceProxy.sol/AxelarGasServiceProxy.json');
-const AxelarGatewayProxy = require('../../artifacts/@axelar-network/axelar-cgp-solidity/contracts/AxelarGatewayProxy.sol/AxelarGatewayProxy.json');
-const AxelarGateway = require('../../artifacts/@axelar-network/axelar-cgp-solidity/contracts/AxelarGateway.sol/AxelarGateway.json');
-const IAxelarGateway = require('../../artifacts/@axelar-network/axelar-cgp-solidity/contracts/interfaces/IAxelarGateway.sol/IAxelarGateway.json');
+const ConstAddressDeployer = require('../artifacts/contracts/pre-deploy/ConstAddressDeployer.sol/ConstAddressDeployer.json');
+const ERC20PrecompileInstance = require('../artifacts/contracts/pre-deploy/ERC20Precompile.sol/ERC20Instance.json');
+const ERC20CrossChainExecutor = require('../artifacts/contracts/pre-deploy/axelar-bridge/ERC20CrossChain.sol/ERC20CrossChain.json');
+const TokenDeployer = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/TokenDeployer.sol/TokenDeployer.json');
+const Auth = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/auth/AxelarAuthWeighted.sol/AxelarAuthWeighted.json');
+const AxelarGasReceiver = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/gas-service/AxelarGasService.sol/AxelarGasService.json');
+const AxelarGasReceiverProxy = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/gas-service/AxelarGasServiceProxy.sol/AxelarGasServiceProxy.json');
+const AxelarGatewayProxy = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/AxelarGatewayProxy.sol/AxelarGatewayProxy.json');
+const AxelarGateway = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/AxelarGateway.sol/AxelarGateway.json');
+const IAxelarGateway = require('../artifacts/@axelar-network/axelar-cgp-solidity/contracts/interfaces/IAxelarGateway.sol/IAxelarGateway.json');
 
 const getBalance = async (account) => {
 const balance = await ethers.utils.formatEther(await provider.getBalance(account));
