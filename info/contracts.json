@@ -1,9 +1,9 @@
 {
-  "gateway": "0xFE0381d6aCD6d1c3C80F49DF9d4C1f1393166c79",
-  "gasReceiver": "0x0018B7F43A0aC430AC922b06EB5aaf8B6cd1b191",
-  "constAddressDeployer": "0x28a3577673719C0aF4a9ea2105ae70cD9D8ab4a8",
-  "crossChainTokenExecutor": "0xBB4DaA2035d2cE55B857414DD4Ae224bCFe8752F",
-  "ss58CrossChainTokenExecutor": "hJGKGji9Y9jBLMpZ26cQBBPWVrFRsCwC9F2NeVzKQbq3KTEh4",
-  "erc20TokenAddress": "0x061DE8F46976346eD88336013844a2b9fbF37cFC",
-  "erc20SS58Address": "hJKWLCfuRUYwx1X99CARAVW9yKro299GDjAnTZ2zHzNWHjjfn"
+  "gateway": "0x14FDEf6b6a14Afd1e61abad721e943577a7348Ff",
+  "gasReceiver": "0x14c1fAf55C56C9493b24E00391755E7A9E0ffbb8",
+  "constAddressDeployer": "0xB1D1F00B6Cd1e148410B50F319BcbFa65ea367b6",
+  "crossChainTokenExecutor": "0x899A5744c6F555cb44f5887AD488B9B366743daF",
+  "ss58CrossChainTokenExecutor": "hJKBAGxWovYb2nVSUmECxKTqUaACYwyoiNfo6kksJmaz5WSbm",
+  "erc20TokenAddress": "0x63782467617944B253a84bd158501c13E5bb5dE7",
+  "erc20SS58Address": "hJLipktbVm2VFcia2rcK3HYDP9z9URLfg3Mbwcgm7CkVLo6wM"
 }
