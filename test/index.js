@@ -56,7 +56,7 @@ describe('unit-test', function () {
 
 describe('live-test', function () {
   this.timeout(30000);
-  const {wallet,accountOfAdmin} = require('../script/axelar-bridge/env')
+  const {wallet,accountOfAdmin,targetAddress} = require('../script/axelar-bridge/env')
   const deployed_info_file = './info/contracts.json';
   let contract_info,token_address,erc20_token
   beforeEach(async () => {
@@ -77,22 +77,33 @@ describe('live-test', function () {
     await (await crosschainExecutor.mint(accountOfAdmin.address, utils.parseEther('1'),{gasPrice: 1e9, gasLimit: 1e6})).wait;
     console.log(`ERC20Token balance after mint is ${await erc20_token.balanceOf(accountOfAdmin.address)}`);
     await (await crosschainExecutor.burn(accountOfAdmin.address, utils.parseEther('0.5'),{gasPrice: 1e9, gasLimit: 1e6})).wait;
-    console.log(`ERC20Token balance after mint is ${await erc20_token.balanceOf(accountOfAdmin.address)}`); 
+    console.log(`ERC20Token balance after burn is ${await erc20_token.balanceOf(accountOfAdmin.address)}`); 
+    await (await crosschainExecutor.mint(targetAddress, utils.parseEther('1'),{gasPrice: 1e9, gasLimit: 1e6})).wait;
+    console.log(`ERC20Token balance after mint is ${await erc20_token.balanceOf(targetAddress)}`);
   });
 });
 
 describe('sign-test', function () {
   dotenv.config({path:'./test.env'})
   var ethUtil = require('ethereumjs-util')
+  const ethers = require('ethers')
+  const Web3 = require('web3')
+  const { keccak256, defaultAbiCoder } = require('ethers/lib/utils')
+  const {wallet,accountOfAdmin,provider,providerRPC} = require('../script/axelar-bridge/env')
+  const web3 = new Web3(new Web3.providers.HttpProvider(providerRPC.chain.rpc));
+  const { stringToU8a, bnToU8a, u8aConcat, u8aToHex } = require('@polkadot/util');
   it('personal sign',async()=>{
     const message = 'Hello Parallel'
-    const payload = u8aToHex(
+    const _payload = u8aToHex(
       Buffer.from(message, 'utf8')
     );
+    console.log(_payload)
+    const payload = stringToU8a(message)
     console.log(payload)
-    const {accountOfAdmin,provider} = require('../script/axelar-bridge/env')
-    //todo:
     // const sig1 = await requestSignature(provider,payload,accountOfAdmin.address)
-    // console.log(sig1)
+    // const messageBytes = keccak256(payload);
+    // console.log(messageBytes)
+    const sig1 = await wallet.signMessage(payload)
+    console.log(sig1)
   });
 })

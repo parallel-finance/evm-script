@@ -89,10 +89,10 @@ const httpGet = (url) => {
 };
 
 const requestSignature = async (provider,message, account) => {
-  const sigResponse = await provider.request({
-    method: 'personal_sign',
-    params: [account, message],
-  });
+  const sigResponse = await provider.send(
+   'personal_sign',
+    [account, message],
+  );
   if (!sigResponse || typeof sigResponse !== 'string') {
     throw new Error('Failed to get signature');
   }

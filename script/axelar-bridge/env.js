@@ -21,6 +21,8 @@ const accountOfAdmin = {
   privateKey: (process.env.ADMIN_PRIVATE_KEY) || ALICEKEY
 };
 
+const targetAddress = (process.env.TARGET_ADDRESS) || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+
 // mapping to asset with id=1(assuming dai) which is created in asset pallet
 const asset_address = ethers.utils.getAddress(
   (process.env.ASSET_PRECOMPILE_ADDRESS) || '0xFfFFFFff00000000000000000000000000000001');
@@ -48,8 +50,6 @@ const AxelarGatewayProxy = require('../../artifacts/@axelar-network/axelar-cgp-s
 const AxelarGateway = require('../../artifacts/@axelar-network/axelar-cgp-solidity/contracts/AxelarGateway.sol/AxelarGateway.json');
 const IAxelarGateway = require('../../artifacts/@axelar-network/axelar-cgp-solidity/contracts/interfaces/IAxelarGateway.sol/IAxelarGateway.json');
 
-
-  
 const getBalance = async (account) => {
 const balance = await ethers.utils.formatEther(await provider.getBalance(account));
 console.log(`The balance of ${account} is: ${balance} HKO`);
@@ -59,5 +59,5 @@ module.exports = {
     asset_address,accountOfAdmin,providerRPC,provider,wallet,deployed_info_file,
     ConstAddressDeployer,ERC20PrecompileInstance,ERC20CrossChainExecutor,
     TokenDeployer,Auth,AxelarGasReceiver,AxelarGasReceiverProxy,
-    AxelarGatewayProxy,AxelarGateway,IAxelarGateway,getBalance
+    AxelarGatewayProxy,AxelarGateway,IAxelarGateway,getBalance,targetAddress
 }
