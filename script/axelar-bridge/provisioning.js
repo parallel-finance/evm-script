@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config({path:'./test.env'})
+
 const ethers = require('ethers');
 const {Wallet, Contract, providers, utils} = ethers;
 const { defaultAbiCoder, arrayify, keccak256, toUtf8Bytes } = utils;
