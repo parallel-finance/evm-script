@@ -21,7 +21,7 @@ const accountOfAdmin = {
   privateKey: (process.env.ADMIN_PRIVATE_KEY) || ALICEKEY
 };
 
-const targetAddress = (process.env.TARGET_ADDRESS) || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+const targetAddress = (process.env.TARGET_ADDRESS) || '0xd43593c715fdd31c61141abd04a99fd6822c8558'
 
 // mapping to asset with id=1(assuming dai) which is created in asset pallet
 const asset_address = ethers.utils.getAddress(
