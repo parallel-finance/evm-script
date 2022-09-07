@@ -56,6 +56,7 @@ describe('unit-test', function () {
 
 describe('live-test', function () {
   this.timeout(30000);
+  dotenv.config({path:'./test.env'})
   const {wallet,accountOfAdmin,targetAddress} = require('../script/env')
   const deployed_info_file = './info/contracts.json';
   let contract_info,token_address,erc20_token
