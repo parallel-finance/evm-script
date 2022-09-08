@@ -83,12 +83,15 @@ describe('live-test', function () {
     //since we add authentication, now only executor can mint/burn
     console.log(`\n\nAlice(private key on evm): \nevm address: ${accountOfAdmin.address} \nss58 address: ${polkadotCryptoUtils.evmToAddress(accountOfAdmin.address, chain_prefix)}`)
     await (await crosschainExecutor.mint(accountOfAdmin.address, utils.parseEther('1'),{gasPrice: 1e9, gasLimit: 1e6})).wait;
+    await new Promise(resolve => setTimeout(resolve, 2000)); 
     console.log(`EVM Alice's balance after mint is ${await erc20_token.balanceOf(accountOfAdmin.address)}`);
     await (await crosschainExecutor.burn(accountOfAdmin.address, utils.parseEther('0.5'),{gasPrice: 1e9, gasLimit: 1e6})).wait;
+    await new Promise(resolve => setTimeout(resolve, 2000)); 
     console.log(`EVM Alice balance after burn is ${await erc20_token.balanceOf(accountOfAdmin.address)}`); 
     
     console.log(`\n\nAlice(private key on substrate): \noriginal ss58 address: hJKzPoi3MQnSLvbShxeDmzbtHncrMXe5zwS3Wa36P6kXeNpcv \nmapping evm address: ${targetAddress} \nss58 address mapping from evm: ${polkadotCryptoUtils.evmToAddress(targetAddress, chain_prefix)}`)
     await (await crosschainExecutor.mint(targetAddress, utils.parseEther('1'),{gasPrice: 1e9, gasLimit: 1e6})).wait;
+    await new Promise(resolve => setTimeout(resolve, 2000));
     console.log(`Substrate Alice's balance after mint is ${await erc20_token.balanceOf(targetAddress)}`);
   });
 });
@@ -101,17 +104,15 @@ describe('sign-test', function () {
   const {wallet,accountOfAdmin,provider,providerRPC} = require('../script/env')
   const web3 = new Web3(new Web3.providers.HttpProvider(providerRPC.chain.rpc));
   const { stringToU8a, bnToU8a, u8aConcat, u8aToHex } = require('@polkadot/util');
+  //change to metamask provider when integration from app
+  const web3_provider = new ethers.providers.Web3Provider(web3.currentProvider);
   it('personal sign',async()=>{
     const message = 'Hello Parallel'
     const _payload = u8aToHex(
       Buffer.from(message, 'utf8')
     );
-    console.log(_payload)
     const payload = stringToU8a(message)
-    console.log(payload)
-    // const sig1 = await requestSignature(provider,payload,accountOfAdmin.address)
-    // const messageBytes = keccak256(payload);
-    // console.log(messageBytes)
+    // const sig1 = await requestSignature(web3_provider,payload,accountOfAdmin.address)
     const sig1 = await wallet.signMessage(payload)
     console.log(sig1)
   });

@@ -18,7 +18,7 @@
     "init-chain": "node script/axelar-bridge/provisioning.js init",
     "provisioning-chain": "node script/axelar-bridge/provisioning.js deploy",
     "test-chain": "mocha --fgrep live-test",
-    "signature-test": "set -a && source test.env &&set +a && mocha --fgrep sign-test"
+    "signature-test": "mocha --fgrep sign-test"
   },
   "dependencies": {
     "@axelar-network/axelar-cgp-solidity": "^4.3.0",
